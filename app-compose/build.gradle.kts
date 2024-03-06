@@ -51,7 +51,7 @@ android {
 
 dependencies {
 
-    implementation("org.bitbucket.brivoinc:mobile-sdk-android:495f48217c")
+    implementation("org.bitbucket.brivoinc:mobile-sdk-android:feature~ME-517-SNAPSHOT")
 
     implementation(platform("androidx.compose:compose-bom:2024.02.01"))
     implementation("androidx.core:core-ktx:1.12.0")
