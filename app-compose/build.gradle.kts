@@ -51,7 +51,18 @@ android {
 
 dependencies {
 
-    //implementation("org.bitbucket.brivoinc:mobile-sdk-android:feature~ME-517-SNAPSHOT")
+    // Jitpack
+    implementation("org.bitbucket.brivoinc:mobile-sdk-android:feature~ME-517-SNAPSHOT")
+
+    /*  Submodule
+    implementation(project(":brivoaccess"))
+    implementation(project(":brivoble"))
+    implementation(project(":brivoble-core"))
+    implementation(project(":brivoconfiguration"))
+    implementation(project(":brivocore"))
+    implementation(project(":brivolocalauthentication"))
+    implementation(project(":brivoonair"))
+    implementation(project(":brivosmarthome")) */
 
     implementation(platform("androidx.compose:compose-bom:2024.02.01"))
     implementation("androidx.core:core-ktx:1.12.0")
