@@ -1,4 +1,4 @@
-# [<img src="brivo_logo.png" width="25"/>](brivo_logo.png) Brivo Mobile SDK Android
+# Brivo Mobile SDK Android
 
 A set of reusable libraries, services and components for Java and Kotlin Android apps.
 ### Installation
@@ -563,6 +563,6 @@ BrivoSDKLocalAuthentication.getInstance().cancelAuthentication()
 If you run into any bugs or issues, feel free to post an [Issues](https://github.com/brivo-mobile-team/brivo-mobile-sdk-android/issues) to discuss.
 
 <p align="center">
-Made with ❤️ at <img src="brivo.png" width="60"/>
+Made with ❤️ at Brivo
 </p>
 
