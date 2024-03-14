@@ -1,3 +1,5 @@
+[![Release](https://jitpack.io/v/org.bitbucket.brivoinc/mobile-sdk-android.svg)](https://jitpack.io/#org.bitbucket.brivoinc/mobile-sdk-android)
+
 # Brivo Mobile SDK Android
 
 A set of reusable libraries, services and components for Java and Kotlin Android apps.
