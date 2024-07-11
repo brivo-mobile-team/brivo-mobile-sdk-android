@@ -5,7 +5,7 @@
 A set of reusable libraries, services and components for Java and Kotlin Android apps.
 ### Installation
 
-Minimum Android version required is 23 in order to use the Brivo Mobile SDK.
+Brivo Mobile SDK requires at minimun Android API 23+.
 
 #### Jitpack ❤️
 
@@ -568,3 +568,19 @@ If you run into any bugs or issues, feel free to post an [Issues](https://github
 Made with ❤️ at Brivo
 </p>
 
+License
+=======
+
+    Copyright 2024 Brivo Inc.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
