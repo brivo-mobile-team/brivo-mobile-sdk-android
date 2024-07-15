@@ -561,6 +561,78 @@ void cancelAuthentication();
 BrivoSDKLocalAuthentication.getInstance().cancelAuthentication()
 ```
 
+BrivoSDK Errors
+=======
+
+## General SDK Errors
+```java
+public class BrivoErrorCodes {
+    public static final int SDK_NOT_INITIALIZED = -1001;
+    public static final int SDK_NOT_CONFIGURED_FOR_LOCAL_STORAGE = -1002;
+    public static final int SDK_NO_PASSES_FOUND_IN_LOCAL_STORAGE = -1003;
+    public static final int SDK_ACCESS_POINT_NOT_FOUND_IN_LOCAL_STORAGE = -1004;
+    public static final int SDK_PASS_NOT_FOUND_IN_LOCAL_STORAGE = -1005;
+    public static final int SDK_BLE_ACCESS_POINT_NOT_FOUND_IN_GIVEN_PASS = -1006;
+    public static final int SDK_BLE_ACCESS_POINT_INVALID_DOOR_TYPE = -1007;
+    public static final int SDK_REQUIRES_INTERNET_CONNECTION = -1008;
+    public static final int SDK_NOT_ALLOWED_TO_CONTINUE= -1009;
+}
+```
+
+## Brivo Onair Errors
+
+```java
+public class BrivoOnairErrorCodes {
+    public static final int ONAIR_INVALID_PASS = 404;
+    public static final int ONAIR_SERVER_CALL_FAILED = -3001;
+    public static final int ONAIR_AUTHENTICATION_MISSING_DATA = -3002;
+    public static final int ONAIR_REDEEM_PASS_MISSING_RESPONSE = -3003;
+    public static final int ONAIR_REDEEM_PASS_MISSING_PASS = -3004;
+    public static final int ONAIR_RETRIEVE_SITES_MISSING_SITES = -3005;
+    public static final int ONAIR_RETRIEVE_SITE_DETAILS_MISSING_SITE = -3006;
+    public static final int ONAIR_RETRIEVE_SITE_ACCESS_POINTS_MISSING_SITE = -3007;
+    public static final int ONAIR_ACCESS_POINT_NOT_FOUND = -3008;
+    public static final int ONAIR_AUTHENTICATION_UNABLE_TO_REFRESH_TOKEN = -3009;
+    public static final int ONAIR_TRUSTED_NETWORK_LOCATION_PERMISSION_NOT_GRANTED = -3010;
+}
+```
+
+## Brivo Ble Errors
+
+```java
+public class BrivoBLEErrorCodes {
+    public static final int BLE_UNKNOWN_ERROR = -2000;
+    public static final int BLE_DISABLED_ON_DEVICE = -2001;
+    public static final int BLE_CONNECTION_MANAGER_FAILED_TO_INITIALIZE = -2002;
+    public static final int BLE_FAILED_TRANSMISSION = -2003;
+    public static final int BLE_ACCESS_DENIED = -2004;
+    public static final int BLE_AUTHENTICATION_TIMED_OUT = -2005;
+    public static final int BLE_LOCATION_PERMISSION_NOT_GRANTED = -2006;
+    public static final int BLE_LOCATION_DISABLED_ON_DEVICE = -2007;
+    public static final int BLE_CONNECTION_MISSING_BRIVO_BLE_CREDENTIAL = -2008;
+    public static final int BLE_CONNECTION_MISSING_USER_ID = -2009;
+    public static final int BLE_CONNECTION_MISSING_ACCESS_POINT = -2010;
+    public static final int BLE_CONNECTION_MISSING_BLE_CREDENTIALS = -2011;
+    public static final int BLE_DEVICE_DISCONNECTED = -2012;
+    public static final int BLE_BLUETOOTH_PERMISSION_NOT_GRANTED = -2013;
+}
+```
+
+## Brivo Authentication Errors
+```java
+public class BrivoLocalAuthenticationErrorCodes {
+    public static final int SDK_LOCAL_AUTHENTICATION_FAILURE = -4000;
+    public static final int SDK_LOCAL_HARDWARE_UNAVAILABLE = -4001;
+    public static final int SDK_LOCAL_TIMEOUT = -4002;
+    public static final int SDK_LOCAL_HW_NOT_PRESENT = -4003;
+    public static final int SDK_LOCAL_NONE_ENROLLED = -4004;
+    public static final int SDK_LOCAL_AUTHENTICATION_CONTEXT_NOT_SET = -4005;
+    public static final int SDK_LOCAL_AUTHENTICATION_CANCEL = -4006;
+    public static final int SDK_LOCAL_INTENT_NULL = -4007;
+    public static final int SDK_LOCAL_AUTHENTICATION_SYSTEM_CANCEL = -4008;
+}
+```
+
 ## Issues
 If you run into any bugs or issues, feel free to post an [Issues](https://github.com/brivo-mobile-team/brivo-mobile-sdk-android/issues) to discuss.
 
