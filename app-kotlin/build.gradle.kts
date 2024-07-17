@@ -46,16 +46,7 @@ android {
 
 dependencies {
 
-    releaseImplementation("org.bitbucket.brivoinc:mobile-sdk-android:feature~ME-517-SNAPSHOT")
-
-    debugImplementation(project(":brivoaccess"))
-    debugImplementation(project(":brivoble"))
-    debugImplementation(project(":brivoble-core"))
-    debugImplementation(project(":brivoconfiguration"))
-    debugImplementation(project(":brivocore"))
-    debugImplementation(project(":brivolocalauthentication"))
-    debugImplementation(project(":brivoonair"))
-    debugImplementation(project(":brivosmarthome"))
+    implementation("org.bitbucket.brivoinc:mobile-sdk-android:v1.20.0")
 
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")

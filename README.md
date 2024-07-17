@@ -72,7 +72,8 @@ dependencies {
 ### Usage
 
 To initialize the Brivo Mobile SDK call the initialize method with the application context and with the BrivoConfiguration object.
-The BrivoConfiguration object requires the clientId and secretId which is provided by Brivo. Valid Brivo URL’s also need to be specified in the Brivo configuration object
+The BrivoConfiguration object requires the clientId and secretId which is provided by Brivo.
+These need to be specified in accordance with the selected `useEURegion` boolean passed to the configuration object. 
 
 
 ```kotlin
@@ -88,19 +89,26 @@ The BrivoConfiguration object requires the clientId and secretId which is provid
 void init(Context context, BrivoConfiguration brivoConfiguration) throws BrivoSDKInitializationException;
 ```
 #### BrivoSDK init usage 
+Example of a function initialising the SDK
 
 ```kotlin
-try {
-    BrivoSDK.getInstance().init(
-        applicationContext, BrivoConfiguration(
-            CLIENT_ID,
-            CLIENT_SECRET,
-            useSDKStorage,
-            shouldVerifyDoor
-        )
-    )
-} catch (e: BrivoSDKInitializationException) {
-    // Handle BrivoSDK initialization exception
+fun initBrivoSDK(isEuRegion:Boolean){
+    try {
+            BrivoSDK.getInstance().init(
+                context = yourApplicationContext,
+                brivoConfiguration = BrivoConfiguration(
+                    clientId = if (isEURegion) <EU_CLIENT_SECRET>
+                    else <US_CLIENT_SECRET>,
+                    clientSecret = if (isEURegion) <EU_CLIENT_SECRET>
+                    else <US_CLIENT_SECRET>,
+                    useEURegion = isEURegion,
+                    useSDKStorage = true,
+                    shouldVerifyDoor = false
+                )
+            )
+    } catch (e: BrivoSDKInitializationException) {
+    // Handle exceptions
+    }
 }
 ```
 
