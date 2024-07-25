@@ -17,5 +17,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "mobile-sdk-android-samples"
 include(
-    ":app-sample"
+    ":app-public"
 )
