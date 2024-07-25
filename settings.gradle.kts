@@ -16,6 +16,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "mobile-sdk-android-samples"
 include(
-    ":app-kotlin",
-    ":app-compose"
+    ":app-sample"
 )
