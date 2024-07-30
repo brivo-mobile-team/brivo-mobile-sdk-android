@@ -1,9 +1,9 @@
 <resources>
-    <string name="app_name">BrivoSDK Compose</string>
+    <string name="app_name">BrivoSDK</string>
     <string name="sdk_version">BrivoSDK %1$s</string>
     <string name="alert_dialog_button_ok">Ok</string>
     <string name="alert_dialog_button_cancel">Cancel</string>
-    <string name="redeem_pass_title">Redeem a Mobile Pass</string>
+    <string name="redeem_pass">Redeem a Mobile Pass</string>
     <string name="redeem_pass_region">Toggle on for US, off for EU</string>
     <string name="redeem_pass_email">Email</string>
     <string name="redeem_pass_token">Token</string>

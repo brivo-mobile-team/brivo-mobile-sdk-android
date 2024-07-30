@@ -5,6 +5,10 @@ plugins {
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
 }
+val CLIENT_ID: String by properties
+val CLIENT_SECRET: String by properties
+val CLIENT_ID_EU: String by properties
+val CLIENT_SECRET_EU: String by properties
 
 android {
     namespace = "com.brivo.app_sdk_public"
@@ -21,6 +25,10 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        buildConfigField("String", "CLIENT_ID", CLIENT_ID)
+        buildConfigField("String", "CLIENT_SECRET", CLIENT_SECRET)
+        buildConfigField("String", "CLIENT_ID_EU", CLIENT_ID_EU)
+        buildConfigField("String", "CLIENT_SECRET_EU", CLIENT_SECRET_EU)
     }
 
     signingConfigs {
@@ -52,6 +60,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.10"
@@ -68,7 +77,7 @@ android {
 
 dependencies {
 
-    val brivo_sdk_version = "2d1a2cd0d9"
+    val brivo_sdk_version = "15ce6b3325"
 
     implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoaccess:$brivo_sdk_version")
     implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoble:$brivo_sdk_version")

@@ -65,7 +65,7 @@ fun RedeemPassContent(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(text = stringResource(id = R.string.redeem_pass_title)) }
+                title = { Text(text = stringResource(id = R.string.redeem_pass)) }
             )
         },
         content = { padding ->

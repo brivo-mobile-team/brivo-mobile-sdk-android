@@ -89,7 +89,7 @@ fun HomeScreenContent(
                     IconButton(
                         onClick = onRedeemPassPressed
                     ) {
-                        Icon(Icons.Filled.Add, stringResource(id = R.string.redeem_pass_title))
+                        Icon(Icons.Filled.Add, stringResource(id = R.string.redeem_pass))
                     }
                 }
             )
