@@ -88,7 +88,7 @@ These need to be specified in accordance with the selected `useEURegion` boolean
 */
 void init(Context context, BrivoConfiguration brivoConfiguration) throws BrivoSDKInitializationException;
 ```
-#### BrivoSDK init usage 
+### BrivoSDK init usage 
 Example of a function initialising the SDK
 
 ```kotlin
@@ -112,8 +112,13 @@ fun initBrivoSDK(isEuRegion:Boolean){
 }
 ```
 
+
 The exception is thrown if the SDK is not initialized correctly.
 For example one of the parameters is null or missing.
+
+### Brivo Sample app usage
+For sample app usage, please add your client Id and client Secret inside the gradle.properties file, in their appropriate variable. Otherwise the sample app will throw an `IllegalArgumentException` with the message "Please add your client Id and client Secret inside gradle.properties file" and it will then close. 
+
 
 ### Brivo Mobile SDK Modules
 

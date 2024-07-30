@@ -77,7 +77,7 @@ android {
 
 dependencies {
 
-    val brivo_sdk_version = "15ce6b3325"
+    val brivo_sdk_version = "1.21.0"
 
     implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoaccess:$brivo_sdk_version")
     implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoble:$brivo_sdk_version")
