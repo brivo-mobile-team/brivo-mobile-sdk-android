@@ -1,5 +1,6 @@
 package com.brivo.app_sdk_public.features.home.presentation
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.brivo.app_sdk_public.core.model.DomainState
@@ -8,6 +9,7 @@ import com.brivo.app_sdk_public.features.home.model.HomeUIEvent
 import com.brivo.app_sdk_public.features.home.model.toBrivoOnairPassUIModel
 import com.brivo.app_sdk_public.features.home.usecase.GetBrivoSDKLocallyStoredPassesUseCase
 import com.brivo.app_sdk_public.features.home.usecase.GetBrivoSDKVersionUseCase
+import com.brivo.app_sdk_public.features.home.usecase.RefreshAllegionCredentialsUseCase
 import com.brivo.app_sdk_public.features.home.usecase.RefreshPassesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +22,8 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val getBrivoSDKVersionUseCase: GetBrivoSDKVersionUseCase,
     private val getBrivoSDKLocallyStoredPassesUseCase: GetBrivoSDKLocallyStoredPassesUseCase,
-    private val refreshPassesUseCase: RefreshPassesUseCase
+    private val refreshPassesUseCase: RefreshPassesUseCase,
+    private val refreshAllegionCredentialsUseCase: RefreshAllegionCredentialsUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeViewState())
@@ -35,9 +38,11 @@ class HomeViewModel @Inject constructor(
             is HomeUIEvent.LoadPasses -> {
                 loadPasses()
             }
+
             is HomeUIEvent.RefreshPasses -> {
                 refreshPasses()
             }
+
             is HomeUIEvent.UpdateAlertMessage -> {
                 updateAlertMessage(alertMessage = event.message)
             }
@@ -51,6 +56,21 @@ class HomeViewModel @Inject constructor(
                 it.copy(
                     version = version
                 )
+            }
+        }
+    }
+
+    private fun refreshAllegionCredentials() {
+        viewModelScope.launch {
+            when (val result = getBrivoSDKLocallyStoredPassesUseCase.execute()) {
+                is DomainState.Failed -> {
+                    Log.d("HomeViewModel", "Failed to get passes")
+                }
+
+                is DomainState.Success -> {
+                    result.data?.values?.toList()
+                        ?.let { refreshAllegionCredentialsUseCase.execute(it) }
+                }
             }
         }
     }
@@ -71,6 +91,7 @@ class HomeViewModel @Inject constructor(
                         }
                     }
                 }
+
                 is DomainState.Failed -> {
                     updateAlertMessage(result.error)
                 }
@@ -80,6 +101,9 @@ class HomeViewModel @Inject constructor(
 
     private fun refreshPasses() {
         viewModelScope.launch {
+            if (_state.value.passes.isEmpty()) {
+                return@launch
+            }
             _state.update {
                 it.copy(
                     refreshing = true,
@@ -93,7 +117,9 @@ class HomeViewModel @Inject constructor(
                 )) {
                     is DomainState.Success -> {
                         loadPasses()
+                        refreshAllegionCredentials()
                     }
+
                     is DomainState.Failed -> {
                         updateAlertMessage(result.error)
                     }

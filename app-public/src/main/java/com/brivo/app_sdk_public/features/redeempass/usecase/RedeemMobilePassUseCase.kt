@@ -6,9 +6,20 @@ import com.brivo.app_sdk_public.core.repository.BrivoMobileSDKRepositoryImpl
 import javax.inject.Inject
 
 class RedeemMobilePassUseCase @Inject constructor(
-    private val brivoSdkMobileRepository: BrivoMobileSDKRepositoryImpl
+    private val brivoSdkMobileRepository: BrivoMobileSDKRepositoryImpl,
 ) {
 
     suspend fun execute(email: String, token: String): DomainState<BrivoOnairPass?> =
-        brivoSdkMobileRepository.redeemMobilePass(email, token)
+        when (val result = brivoSdkMobileRepository.redeemMobilePass(email, token)) {
+            is DomainState.Failed -> {
+                DomainState.Failed(result.error)
+            }
+
+            is DomainState.Success -> {
+                result.data?.let { brivoSdkMobileRepository.refreshAllegionCredential(it) }
+                DomainState.Success(result.data)
+            }
+        }
 }
+
+

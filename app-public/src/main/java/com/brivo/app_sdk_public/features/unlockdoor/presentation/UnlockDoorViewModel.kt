@@ -3,23 +3,21 @@ package com.brivo.app_sdk_public.features.unlockdoor.presentation
 import android.Manifest
 import android.os.Build
 import android.os.CancellationSignal
-import android.os.CountDownTimer
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.brivo.app_sdk_public.App
-import com.brivo.sdk.BrivoLog
-import com.brivo.sdk.enums.AccessPointCommunicationState
-import com.brivo.sdk.model.BrivoResult
-import com.brivo.app_sdk_public.core.model.DomainState
 import com.brivo.app_sdk_public.features.unlockdoor.model.DoorState
 import com.brivo.app_sdk_public.features.unlockdoor.model.UnlockDoorListener
 import com.brivo.app_sdk_public.features.unlockdoor.model.UnlockDoorUIEvent
 import com.brivo.app_sdk_public.features.unlockdoor.navigation.UnlockDoorArgs
-import com.brivo.app_sdk_public.features.unlockdoor.usecase.GetBLEErrorsUseCase
 import com.brivo.app_sdk_public.features.unlockdoor.usecase.InitializeBrivoSDKLocalAuthUseCase
 import com.brivo.app_sdk_public.features.unlockdoor.usecase.UnlockDoorUseCase
 import com.brivo.app_sdk_public.features.unlockdoor.usecase.UnlockNearestBLEAccessPointUseCase
+import com.brivo.sdk.BrivoLog
+import com.brivo.sdk.enums.AccessPointCommunicationState
+import com.brivo.sdk.model.BrivoResult
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
@@ -41,29 +39,22 @@ class UnlockDoorViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val initializeBrivoSDKLocalAuthUseCase: InitializeBrivoSDKLocalAuthUseCase,
     private val unlockNearestBLEAccessPointUseCase: UnlockNearestBLEAccessPointUseCase,
-    private val unlockDoorUseCase: UnlockDoorUseCase,
-    private val getBLEErrorsUseCase: GetBLEErrorsUseCase
+    private val unlockDoorUseCase: UnlockDoorUseCase
 ) : ViewModel() {
 
     private val unlockDoorArgs: UnlockDoorArgs = UnlockDoorArgs(
         savedStateHandle
     )
 
-    private val _state = MutableStateFlow(UnlockDoorViewState(
-        accessPointName = unlockDoorArgs.accessPointName,
-        isMagicButton = unlockDoorArgs.passId == ""
-    ))
+    private val _state = MutableStateFlow(
+        UnlockDoorViewState(
+            accessPointName = unlockDoorArgs.accessPointName,
+            isMagicButton = unlockDoorArgs.passId == ""
+        )
+    )
     val state: StateFlow<UnlockDoorViewState> = _state
 
     private var cancellationSignal = CancellationSignal()
-
-    private var unlockAccessPointTimer =
-        object: CountDownTimer(UNLOCK_TIMEOUT, UNLOCK_TIMEOUT) {
-        override fun onTick(millisUntilFinished: Long) {}
-        override fun onFinish() {
-            processUnlockTimeout()
-        }
-    }
 
     fun onEvent(event: UnlockDoorUIEvent) {
         when (event) {
@@ -71,29 +62,44 @@ class UnlockDoorViewModel @Inject constructor(
                 checkBackgroundPermissions()
                 checkBluetoothPermissions()
             }
+
             is UnlockDoorUIEvent.ResetBackgroundPermissionDialog -> {
                 updateShowLocationPermissionRationaleDialog(false)
             }
+
             is UnlockDoorUIEvent.ResetBluetoothPermissionDialog -> {
                 updateShowBluetoothPermissionRationaleDialog(false)
             }
+
             is UnlockDoorUIEvent.InitLocalAuth -> {
-                initBrivoSDKLocalAuth(event.title, event.message, event.negativeButtonText, event.description)
+                initBrivoSDKLocalAuth(
+                    event.title,
+                    event.message,
+                    event.negativeButtonText,
+                    event.description
+                )
             }
+
             is UnlockDoorUIEvent.UnlockDoor -> {
-                if (unlockDoorArgs.passId.isEmpty()) unlockDoorWithMagicButton()
-                else unlockDoor()
+                if (unlockDoorArgs.passId.isEmpty()) {
+                    unlockDoorWithMagicButton(activity = event.activity)
+                } else {
+                    unlockDoor(activity = event.activity)
+                }
             }
+
             is UnlockDoorUIEvent.DoorUnlocked -> {
                 updateDoorState(DoorState.UNLOCKED)
             }
+
             is UnlockDoorUIEvent.DoorLocked -> {
                 updateDoorState(DoorState.LOCKED)
             }
+
             is UnlockDoorUIEvent.CancelDoorUnlock -> {
                 cancellationSignal.cancel()
-                unlockAccessPointTimer.cancel()
             }
+
             is UnlockDoorUIEvent.UpdateAlertMessage -> {
                 updateAlertMessage(alertMessage = event.message)
             }
@@ -117,59 +123,54 @@ class UnlockDoorViewModel @Inject constructor(
     }
 
     private fun checkBackgroundPermissions() {
-        if (_state.value.isMagicButton) {
-            val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION
-            } else {
-                Manifest.permission.ACCESS_FINE_LOCATION
-            }
-            Dexter
-                .withContext(App.instance.applicationContext)
-                .withPermission(permission)
-                .withListener(object : PermissionListener {
-                    override fun onPermissionGranted(p0: PermissionGrantedResponse?) {}
-                    override fun onPermissionDenied(p0: PermissionDeniedResponse?) {}
-                    override fun onPermissionRationaleShouldBeShown(
-                        permission: PermissionRequest,
-                        token: PermissionToken
-                    ) {
-                        updateShowLocationPermissionRationaleDialog(true)
-                    }
-                }).check()
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION
+        } else {
+            Manifest.permission.ACCESS_FINE_LOCATION
         }
+        Dexter
+            .withContext(App.instance.applicationContext)
+            .withPermission(permission)
+            .withListener(object : PermissionListener {
+                override fun onPermissionGranted(p0: PermissionGrantedResponse?) {}
+                override fun onPermissionDenied(p0: PermissionDeniedResponse?) {}
+                override fun onPermissionRationaleShouldBeShown(
+                    permission: PermissionRequest,
+                    token: PermissionToken
+                ) {
+                    updateShowLocationPermissionRationaleDialog(true)
+                }
+            }).check()
     }
 
     private fun checkBluetoothPermissions() {
-        if (_state.value.isMagicButton) {
-            val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                listOf(
-                    Manifest.permission.BLUETOOTH_SCAN,
-                    Manifest.permission.BLUETOOTH_CONNECT,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                )
-            } else {
-                listOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                )
-            }
-
-            Dexter.withContext(App.instance.applicationContext)
-                .withPermissions(permissions)
-                .withListener(object: MultiplePermissionsListener {
-                    override fun onPermissionsChecked(report: MultiplePermissionsReport) { }
-                    override fun onPermissionRationaleShouldBeShown(
-                        request: MutableList<PermissionRequest>,
-                        token: PermissionToken
-                    ) {
-                        updateShowBluetoothPermissionRationaleDialog(true)
-                    }
-                }).check()
+        val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            listOf(
+                Manifest.permission.BLUETOOTH_SCAN,
+                Manifest.permission.BLUETOOTH_CONNECT,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
+        } else {
+            listOf(
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
         }
+
+        Dexter.withContext(App.instance.applicationContext)
+            .withPermissions(permissions)
+            .withListener(object : MultiplePermissionsListener {
+                override fun onPermissionsChecked(report: MultiplePermissionsReport) {}
+                override fun onPermissionRationaleShouldBeShown(
+                    request: MutableList<PermissionRequest>,
+                    token: PermissionToken
+                ) {
+                    updateShowBluetoothPermissionRationaleDialog(true)
+                }
+            }).check()
     }
 
-    private fun unlockDoorWithMagicButton() {
+    private fun unlockDoorWithMagicButton(activity: FragmentActivity) {
         viewModelScope.launch {
-            unlockAccessPointTimer.start()
             updateDoorState(DoorState.UNLOCKING)
             unlockNearestBLEAccessPointUseCase.execute(
                 cancellationSignal = cancellationSignal,
@@ -177,14 +178,14 @@ class UnlockDoorViewModel @Inject constructor(
                     override fun onUnlockDoorEvent(result: BrivoResult) {
                         processUnlockDoorEvent(result)
                     }
-                }
+                },
+                activity = activity
             )
         }
     }
 
-    private fun unlockDoor() {
+    private fun unlockDoor(activity: FragmentActivity) {
         viewModelScope.launch {
-            unlockAccessPointTimer.start()
             updateDoorState(DoorState.UNLOCKING)
             unlockDoorUseCase.execute(
                 passId = unlockDoorArgs.passId,
@@ -194,7 +195,8 @@ class UnlockDoorViewModel @Inject constructor(
                     override fun onUnlockDoorEvent(result: BrivoResult) {
                         processUnlockDoorEvent(result)
                     }
-                }
+                },
+                activity = activity
             )
         }
     }
@@ -203,14 +205,17 @@ class UnlockDoorViewModel @Inject constructor(
         viewModelScope.launch {
             when (result.communicationState) {
                 AccessPointCommunicationState.SUCCESS -> {
-                   onUnlockSuccess(result)
+                    onUnlockSuccess(result)
                 }
+
                 AccessPointCommunicationState.FAILED -> {
-                  onUnlockFailed(result)
+                    onUnlockFailed(result)
                 }
+
                 AccessPointCommunicationState.SHOULD_CONTINUE -> {
                     result.shouldContinueListener?.onShouldContinue(true)
                 }
+
                 AccessPointCommunicationState.SCANNING -> BrivoLog.i("scanning")
                 AccessPointCommunicationState.AUTHENTICATE -> BrivoLog.i("authenticate")
                 AccessPointCommunicationState.CONNECTING -> BrivoLog.i("connecting")
@@ -219,31 +224,10 @@ class UnlockDoorViewModel @Inject constructor(
         }
     }
 
-    private fun processUnlockTimeout() {
-        viewModelScope.launch {
-            when (val result = getBLEErrorsUseCase.execute()) {
-                is DomainState.Success -> {
-                    cancellationSignal.cancel()
-                    unlockAccessPointTimer.cancel()
-                    _state.update {
-                        it.copy(
-                            doorState = DoorState.LOCKED,
-                            alertMessage = result.data.message
-                        )
-                    }
-                }
-                is DomainState.Failed -> {
-                    updateAlertMessage(result.error)
-                }
-            }
-        }
-    }
-
     private suspend fun onUnlockSuccess(result: BrivoResult) {
         BrivoLog.i("onUnlockSuccess: ${result.communicationState.name}")
         updateDoorState(DoorState.UNLOCKED)
         updateShowSnackbar(true)
-        unlockAccessPointTimer.cancel()
         cancellationSignal.cancel()
         delay(5000)
         updateDoorState(DoorState.LOCKED)
@@ -318,8 +302,4 @@ class UnlockDoorViewModel @Inject constructor(
         val showLocationPermissionRationaleDialog: Boolean = false,
         val showBluetoothPermissionRationaleDialog: Boolean = false
     )
-
-    companion object {
-        const val UNLOCK_TIMEOUT = 30000L
-    }
 }

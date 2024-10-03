@@ -47,7 +47,8 @@ class RedeemPassViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update {
                 it.copy(
-                    alertMessage = alertMessage
+                    alertMessage = alertMessage,
+                    isRedeemingPass = false
                 )
             }
         }
@@ -57,7 +58,8 @@ class RedeemPassViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update {
                 it.copy(
-                    mobilePassRedeemed = true
+                    mobilePassRedeemed = true,
+                    isRedeemingPass = false
                 )
             }
         }
@@ -91,6 +93,12 @@ class RedeemPassViewModel @Inject constructor(
 
     private fun redeemPass() {
         viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    isRedeemingPass = true
+                )
+            }
+
             when (val result = redeemMobilePassUseCase.execute(
                 email = _state.value.email.text.trim(),
                 token = _state.value.token.text.trim()
@@ -109,6 +117,7 @@ class RedeemPassViewModel @Inject constructor(
         val email: TextFieldValue = TextFieldValue(""),
         val token: TextFieldValue = TextFieldValue(""),
         val alertMessage: String = "",
-        val mobilePassRedeemed: Boolean = false
+        val mobilePassRedeemed: Boolean = false,
+        val isRedeemingPass: Boolean = false
     )
 }

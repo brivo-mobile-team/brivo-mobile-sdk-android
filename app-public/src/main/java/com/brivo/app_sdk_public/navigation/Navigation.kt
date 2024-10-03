@@ -60,7 +60,7 @@ fun MainNavigation(
 
 fun NavGraphBuilder.homeGraph(
     onRedeemPassPressed: () -> Unit,
-    onSitePressed: (String, Int) -> Unit,
+    onSitePressed: (String, String) -> Unit,
     onMagicButtonPressed: () -> Unit,
     nestedGraph: NavGraphBuilder.() -> Unit
 ) {

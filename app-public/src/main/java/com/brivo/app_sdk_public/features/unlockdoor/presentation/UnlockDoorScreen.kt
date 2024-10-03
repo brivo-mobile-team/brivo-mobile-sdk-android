@@ -44,6 +44,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import com.brivo.app_sdk_public.R
@@ -182,7 +183,7 @@ fun UnlockDoorContent(
                 title = {
                     Text(
                         textAlign = TextAlign.Center,
-                        text =  if (accessPointName.isNotEmpty())
+                        text = if (accessPointName.isNotEmpty())
                             stringResource(id = R.string.unlock_door_title, accessPointName)
                         else stringResource(id = R.string.unlock_door_with_magic_button_title)
                     )
@@ -196,10 +197,10 @@ fun UnlockDoorContent(
                     .padding(top = padding.calculateTopPadding()),
                 contentAlignment = Alignment.Center
             ) {
-               PulsatingLockButton(
-                   doorState = doorState,
-                   onEvent = onEvent
-               )
+                PulsatingLockButton(
+                    doorState = doorState,
+                    onEvent = onEvent
+                )
             }
         },
         snackbarHost = {
@@ -219,15 +220,15 @@ fun UnlockResultSnackbar(doorState: DoorState) {
             Image(
                 modifier = Modifier.size(16.dp),
                 painter =
-                    if (doorState == DoorState.UNLOCKED) painterResource(id = R.drawable.lock_open)
-                    else painterResource(id = R.drawable.lock),
+                if (doorState == DoorState.UNLOCKED) painterResource(id = R.drawable.lock_open)
+                else painterResource(id = R.drawable.lock),
                 contentDescription = ""
             )
             Spacer(modifier = Modifier.size(16.dp))
             Text(
                 text =
-                    if (doorState == DoorState.UNLOCKED) stringResource(id = R.string.unlock_door_success)
-                    else stringResource(id = R.string.unlock_door_failed),
+                if (doorState == DoorState.UNLOCKED) stringResource(id = R.string.unlock_door_success)
+                else stringResource(id = R.string.unlock_door_failed),
                 color = Color.Black
             )
         }
@@ -282,19 +283,22 @@ fun PulsatingLockButtonContent(
     doorState: DoorState,
     onEvent: (UnlockDoorUIEvent) -> Unit
 ) {
+
+    val activity = LocalContext.current as FragmentActivity
+
     IconButton(
         modifier = Modifier.size(250.dp),
-        onClick = { if (doorState == DoorState.LOCKED) onEvent(UnlockDoorUIEvent.UnlockDoor) }
+        onClick = { if (doorState == DoorState.LOCKED) onEvent(UnlockDoorUIEvent.UnlockDoor(activity = activity)) }
     ) {
         Image(
             painter = painterResource(
-                id = when(doorState) {
+                id = when (doorState) {
                     DoorState.UNLOCKED -> R.drawable.lock_open
                     else -> R.drawable.lock
                 }
             ),
             colorFilter = ColorFilter.tint(
-                color = when(doorState) {
+                color = when (doorState) {
                     DoorState.UNLOCKED -> Color.Green
                     else -> Color.Red
                 },

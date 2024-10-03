@@ -3,7 +3,7 @@ package com.brivo.app_sdk_public.features.home.model
 import com.brivo.sdk.onair.model.BrivoSite
 
 data class BrivoSiteUIModel(
-    val id: Int,
+    val id: String,
     val siteName: String
 )
 

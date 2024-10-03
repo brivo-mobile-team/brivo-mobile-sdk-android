@@ -13,14 +13,14 @@ import com.brivo.app_sdk_public.navigation.Destinations
 const val PassIdArg = "passIdArg"
 const val SiteIdArg = "siteIdArg"
 
-class AccessPointsArgs(val passId: String, val siteId: Int) {
+class AccessPointsArgs(val passId: String, val siteId: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         Uri.decode(checkNotNull(savedStateHandle[PassIdArg]).toString()),
-        Uri.decode(checkNotNull(savedStateHandle[SiteIdArg]).toString()).toInt(),
+        Uri.decode(checkNotNull(savedStateHandle[SiteIdArg]).toString()),
     )
 }
 
-fun NavController.navigateAccessPointsScreen(passId: String, siteId: Int) {
+fun NavController.navigateAccessPointsScreen(passId: String, siteId: String) {
     this.navigate("${Destinations.AccessPoints.route}/$passId/$siteId")
 }
 

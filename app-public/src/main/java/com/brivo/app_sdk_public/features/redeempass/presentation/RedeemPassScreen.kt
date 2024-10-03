@@ -1,11 +1,14 @@
 package com.brivo.app_sdk_public.features.redeempass.presentation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -19,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
@@ -34,26 +38,45 @@ fun RedeemPassScreen(
     viewModel: RedeemPassViewModel = hiltViewModel(),
     onBackPressed: () -> Unit
 ) {
-
     val state by viewModel.state.collectAsState()
 
-    if (state.mobilePassRedeemed) {
-        AlertMessageDialog(
-            message = stringResource(id = R.string.redeem_pass_success),
-            onDialogClosed = { onBackPressed() }
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        RedeemPassContent(
+            onEvent = viewModel::onEvent
         )
-    }
 
-    if (state.alertMessage.isNotEmpty()) {
-        AlertMessageDialog(
-            message = state.alertMessage,
-            onDialogClosed = { viewModel.onEvent(RedeemPassUIEvent.UpdateAlertMessage("")) }
-        )
-    }
+        if (state.isRedeemingPass) {
+            LoadingIndicator()
+        }
 
-    RedeemPassContent(
-        onEvent = viewModel::onEvent
-    )
+        if (state.mobilePassRedeemed) {
+            AlertMessageDialog(
+                message = stringResource(id = R.string.redeem_pass_success),
+                onDialogClosed = { onBackPressed() }
+            )
+        }
+
+        if (state.alertMessage.isNotEmpty()) {
+            AlertMessageDialog(
+                message = state.alertMessage,
+                onDialogClosed = { viewModel.onEvent(RedeemPassUIEvent.UpdateAlertMessage("")) }
+            )
+        }
+    }
+}
+
+@Composable
+fun LoadingIndicator() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.5f)),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator()
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -135,7 +158,7 @@ fun RedeemPassForm(
             singleLine = true,
             label = {
                 Text(
-                    text = stringResource(id = R.string.redeem_pass_token)
+                    text = stringResource(id = R.string.redeem_pass_access_code)
                 )
             },
             onValueChange =  { newValue ->

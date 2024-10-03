@@ -9,6 +9,7 @@ val CLIENT_ID: String by properties
 val CLIENT_SECRET: String by properties
 val CLIENT_ID_EU: String by properties
 val CLIENT_SECRET_EU: String by properties
+val gitHubGradleAccessToken: String? by properties
 
 android {
     namespace = "com.brivo.app_sdk_public"
@@ -16,10 +17,10 @@ android {
 
     defaultConfig {
         applicationId = "com.brivo.app_sdk_public"
-        minSdk = 26
+        minSdk = 29
         targetSdk = 34
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.22.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -75,9 +76,15 @@ android {
     }
 }
 
+fun checkGithubAccessToken(gitHubGradleAccessToken: String?): Boolean =
+    gitHubGradleAccessToken.isNullOrEmpty().not()
+
 dependencies {
 
-    val brivo_sdk_version = "1.21.0"
+    val brivo_sdk_version = "baf85da3ee"
+    if (checkGithubAccessToken(gitHubGradleAccessToken)) {
+        implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoble-allegion:$brivo_sdk_version")
+    }
 
     implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoaccess:$brivo_sdk_version")
     implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoble:$brivo_sdk_version")
@@ -107,6 +114,9 @@ dependencies {
     kapt("com.google.dagger:hilt-compiler:2.49")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     kapt("androidx.hilt:hilt-compiler:1.2.0")
+
+    // Allegion SDK Module
+    implementation("com.allegion:MobileAccessSDK:latest.release")
 
     debugImplementation("androidx.compose.ui:ui-tooling:1.6.8")
 

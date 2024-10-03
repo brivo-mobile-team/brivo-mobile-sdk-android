@@ -12,6 +12,6 @@ data class AccessPointUIModel(
 fun BrivoAccessPoint.toAccessPointUIModel() =
     AccessPointUIModel(
         id = this.id,
-        accessPointName = this.name,
+        accessPointName = this.name ?: "",
         doorType = this.doorType
     )

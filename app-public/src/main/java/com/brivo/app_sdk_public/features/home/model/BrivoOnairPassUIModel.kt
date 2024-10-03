@@ -15,12 +15,12 @@ data class BrivoOnairPassUIModel(
 
 fun BrivoOnairPass.toBrivoOnairPassUIModel() =
     BrivoOnairPassUIModel(
-        passId = this.passId,
+        passId = this.pass,
         accountId = this.accountId,
         accountName = this.accountName,
         firstName = this.firstName,
         lastName = this.lastName,
         accessToken = this.brivoOnairPassCredentials.tokens.accessToken,
-        refreshToken = this.brivoOnairPassCredentials.tokens.refreshToken,
+        refreshToken = this.brivoOnairPassCredentials.tokens.refreshToken ?: "",
         sites = this.sites.map { site -> site.toBrivoSiteUIModel() }
     )

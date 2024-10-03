@@ -6,7 +6,7 @@
     <string name="redeem_pass">Redeem a Mobile Pass</string>
     <string name="redeem_pass_region">Toggle on for US, off for EU</string>
     <string name="redeem_pass_email">Email</string>
-    <string name="redeem_pass_token">Token</string>
+    <string name="redeem_pass_access_code">Token</string>
     <string name="redeem_pass_submit">Submit</string>
     <string name="redeem_pass_success">Mobile Pass Successfully Redeemed</string>
     <string name="home_sites_empty">You have no Mobile Passes. Add passes by tapping the + button.</string>

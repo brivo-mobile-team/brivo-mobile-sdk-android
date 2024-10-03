@@ -31,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -39,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import com.brivo.app_sdk_public.R
+import com.brivo.app_sdk_public.TestTags
 import com.brivo.app_sdk_public.features.home.model.BrivoOnairPassUIModel
 import com.brivo.app_sdk_public.features.home.model.BrivoSiteUIModel
 import com.brivo.app_sdk_public.features.home.model.HomeUIEvent
@@ -51,13 +53,14 @@ import com.brivo.app_sdk_public.view.ThemedPreview
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     onRedeemPassPressed: () -> Unit,
-    onSitePressed: (String, Int) -> Unit,
+    onSitePressed: (String, String) -> Unit,
     onMagicButtonPressed: () -> Unit,
 ) {
 
     ComposableLifecycle { _, event ->
         if (event == Lifecycle.Event.ON_RESUME) {
             viewModel.onEvent(HomeUIEvent.LoadPasses)
+            viewModel.onEvent(HomeUIEvent.RefreshPasses)
         }
     }
 
@@ -76,7 +79,7 @@ fun HomeScreen(
 fun HomeScreenContent(
     state: HomeViewModel.HomeViewState,
     onRedeemPassPressed: () -> Unit,
-    onSitePressed: (String, Int) -> Unit,
+    onSitePressed: (String, String) -> Unit,
     onMagicButtonPressed: () -> Unit,
     onEvent: (HomeUIEvent) -> Unit
 ) {
@@ -138,7 +141,7 @@ fun PassesList(
     loading: Boolean,
     refreshing: Boolean,
     passes: List<BrivoOnairPassUIModel>,
-    onSitePressed: (String, Int)  -> Unit,
+    onSitePressed: (String, String)  -> Unit,
     onEvent: (HomeUIEvent) -> Unit
 ) {
 
@@ -167,12 +170,15 @@ fun PassesList(
                 .clipToBounds()
                 .pullRefresh(pullToRefreshState)
         ) {
-            LazyColumn {
+            LazyColumn(
+                Modifier.testTag(TestTags.PASSES_LIST)
+            ) {
                 itemsIndexed(passes) { _, pass ->
                     MobilePassHeader(pass = pass)
                     MobilePassChild(
                         pass = pass,
-                        onSitePressed = onSitePressed
+                        onSitePressed = onSitePressed,
+                        Modifier.testTag(TestTags.PASSES_LIST_ITEM)
                     )
                 }
             }
@@ -222,7 +228,8 @@ fun MobilePassHeader(
 @Composable
 fun MobilePassChild(
     pass: BrivoOnairPassUIModel,
-    onSitePressed: (String, Int) -> Unit,
+    onSitePressed: (String, String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     if (pass.sites.isEmpty()) {
         Text(
@@ -232,7 +239,7 @@ fun MobilePassChild(
     } else {
         pass.sites.forEach { site ->
             Row(
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxWidth()
                     .clickable { onSitePressed(pass.passId, site.id) }
                     .padding(16.dp),
@@ -263,15 +270,15 @@ fun HomePreview() {
             accessToken = "accessToken",
             refreshToken = "refreshToken",
             sites = listOf(
-                BrivoSiteUIModel(id = 0, siteName = "Site 1"),
-                BrivoSiteUIModel(id = 1, siteName = "Site 2"),
-                BrivoSiteUIModel(id = 2, siteName = "Site 3"),
-                BrivoSiteUIModel(id = 3, siteName = "Site 4"),
-                BrivoSiteUIModel(id = 4, siteName = "Site 5"),
-                BrivoSiteUIModel(id = 5, siteName = "Site 6"),
-                BrivoSiteUIModel(id = 6, siteName = "Site 7"),
-                BrivoSiteUIModel(id = 7, siteName = "Site 8"),
-                BrivoSiteUIModel(id = 8, siteName = "Site 9"),
+                BrivoSiteUIModel(id = "0", siteName = "Site 1"),
+                BrivoSiteUIModel(id = "1", siteName = "Site 2"),
+                BrivoSiteUIModel(id = "2", siteName = "Site 3"),
+                BrivoSiteUIModel(id = "3", siteName = "Site 4"),
+                BrivoSiteUIModel(id = "4", siteName = "Site 5"),
+                BrivoSiteUIModel(id = "5", siteName = "Site 6"),
+                BrivoSiteUIModel(id = "6", siteName = "Site 7"),
+                BrivoSiteUIModel(id = "7", siteName = "Site 8"),
+                BrivoSiteUIModel(id = "8", siteName = "Site 9"),
             )
         ),
         BrivoOnairPassUIModel(
