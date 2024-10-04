@@ -77,16 +77,16 @@ android {
 }
 
 fun checkGithubAccessToken(gitHubGradleAccessToken: String?): Boolean =
-    gitHubGradleAccessToken.isNullOrBlank().not()
+    gitHubGradleAccessToken.isNullOrEmpty().not()
 
 dependencies {
 
-    val brivo_sdk_version = "baf85da3ee"
+    val brivo_sdk_version = "a93b16a42b"
     if (checkGithubAccessToken(gitHubGradleAccessToken)) {
-        implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoble-allegion:$brivo_sdk_version")
         // Allegion SDK Module
         implementation("com.allegion:MobileAccessSDK:latest.release")
     }
+    implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoble-allegion:$brivo_sdk_version")
 
     implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoaccess:$brivo_sdk_version")
     implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoble:$brivo_sdk_version")

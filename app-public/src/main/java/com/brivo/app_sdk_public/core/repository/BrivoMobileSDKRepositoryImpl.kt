@@ -8,6 +8,7 @@ import com.brivo.app_sdk_public.BrivoSampleConstants
 import com.brivo.app_sdk_public.core.model.DomainState
 import com.brivo.app_sdk_public.core.utils.BrivoSdkActivityDelegateImpl
 import com.brivo.app_sdk_public.features.unlockdoor.model.UnlockDoorListener
+import com.brivo.sdk.BrivoLog
 import com.brivo.sdk.BrivoSDK
 import com.brivo.sdk.BrivoSDKInitializationException
 import com.brivo.sdk.access.BrivoSDKAccess
@@ -17,6 +18,7 @@ import com.brivo.sdk.localauthentication.BrivoSDKLocalAuthentication
 import com.brivo.sdk.model.BrivoConfiguration
 import com.brivo.sdk.model.BrivoError
 import com.brivo.sdk.model.BrivoResult
+import com.brivo.sdk.model.BrivoSDKApiState
 import com.brivo.sdk.onair.interfaces.IOnRedeemPassListener
 import com.brivo.sdk.onair.interfaces.IOnRetrieveSDKLocallyStoredPassesListener
 import com.brivo.sdk.onair.model.BrivoOnairPass
@@ -49,7 +51,10 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
             return DomainState.Failed(e.message!!)
         }
         try {
-            BrivoSDKBLEAllegion.getInstance().init()
+            val result = BrivoSDKBLEAllegion.getInstance().init()
+            if(result is BrivoSDKApiState.Failed) {
+                BrivoLog.e("Failed to initialize BrivoSDKBLEAllegion: ${result.brivoError.message}")
+            }
         } catch (e: BrivoSDKInitializationException) {
             return DomainState.Failed(e.message ?: "Failed to initialize BrivoSDKBLEAllegion")
         }
