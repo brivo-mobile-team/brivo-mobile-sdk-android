@@ -33,6 +33,9 @@ If you want specific modules then add any of the following dependencies
 
 ```gradle
 dependencies {
+     if (checkGithubAccessToken(gitHubGradleAccessToken)) {
+        implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoble-allegion:Tag") //This is an optional dependency module for use with Allegion BLE credentials which requires integrating their SDK
+    }
     implementation 'org.bitbucket.brivoinc.mobile-sdk-android:brivoaccess:Tag'
     implementation 'org.bitbucket.brivoinc.mobile-sdk-android:brivoble:Tag'
     implementation 'org.bitbucket.brivoinc.mobile-sdk-android:brivoblecore:Tag'
@@ -41,7 +44,14 @@ dependencies {
     implementation 'org.bitbucket.brivoinc.mobile-sdk-android:brivolocalauthentication:Tag'
     implementation 'org.bitbucket.brivoinc.mobile-sdk-android:brivoonair:Tag'
     implementation 'org.bitbucket.brivoinc.mobile-sdk-android:brivosmarthome:Tag'
+
+    // Allegion SDK Module
+    implementation("com.allegion:MobileAccessSDK:latest.release") //This is the Allegion SDK Dependency required if you're using BrivoBLE-Allegion. In order to fetch it, you're required to receive a github access token from allegion and add it to your gradle.properties file
 }
+```
+
+```gradle.properties option for BrivoBLe-Allegion use
+    gitHubGradleAccessToken = Github_Access_Key //Provided by Allegion
 ```
 
 <b>Step 3</b> Add the following permissions to your app's manifest
@@ -413,6 +423,43 @@ try {
 
 #### BrivoBLE
 This module manages the connection between an access point and a panel through bluetooth
+
+#### BrivoSDKBleAllegion
+This module handles unlocking of allegion doors offline.
+
+```kotlin
+
+/**
+ * Initializes the BrivoSDKBLEAllegion module
+ *
+ * @throws BrivoSDKInitializationException if initialization fails
+ */
+@Throws(BrivoSDKInitializationException::class)
+fun init()
+
+try {
+    BrivoSDKBLEAllegion.getInstance().init()
+} catch (e: BrivoSDKInitializationException) {
+    e.printStackTrace()
+}
+/**
+ * Refreshes the credentials for Allegion doors
+ *
+ * @param pass the BrivoOnairPass object
+ * @return BrivoSDKApiState indicating success or failure
+ */
+fun refreshCredentials(pass: BrivoOnairPass): BrivoSDKApiState
+
+when (val result = BrivoSDKBLEAllegion.getInstance().refreshCredentials(pass)) {
+    is BrivoSDKApiState.Failed -> {
+        BrivoApiState.Failed(result.brivoError)
+    }
+
+    is BrivoSDKApiState.Success -> {
+        BrivoApiState.Success(Unit)
+    }
+}
+```
 
 #### BrivoConfiguration
 This is the module used to configure Allegion Control Locks for the No Tour feature
