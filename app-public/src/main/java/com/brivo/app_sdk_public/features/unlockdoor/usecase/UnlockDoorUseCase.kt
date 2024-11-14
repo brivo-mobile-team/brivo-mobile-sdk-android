@@ -1,10 +1,9 @@
 package com.brivo.app_sdk_public.features.unlockdoor.usecase
 
-import android.os.CancellationSignal
-import com.brivo.app_sdk_public.core.model.DomainState
-import com.brivo.app_sdk_public.core.repository.BrivoMobileSDKRepositoryImpl
-import com.brivo.app_sdk_public.features.unlockdoor.model.UnlockDoorListener
 import androidx.fragment.app.FragmentActivity
+import com.brivo.app_sdk_public.core.repository.BrivoMobileSDKRepositoryImpl
+import com.brivo.sdk.model.BrivoResult
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class UnlockDoorUseCase @Inject constructor(
@@ -14,15 +13,10 @@ class UnlockDoorUseCase @Inject constructor(
     fun execute(
         passId: String,
         accessPointId: String,
-        cancellationSignal: CancellationSignal,
-        listener: UnlockDoorListener,
         activity: FragmentActivity
-    ): DomainState<Unit> =
-        brivoSdkMobileRepository.unlockAccessPoint(
-            passId = passId,
-            accessPointId = accessPointId,
-            cancellationSignal = cancellationSignal,
-            listener = listener,
-            activity = activity
-        )
+    ): Flow<BrivoResult> = brivoSdkMobileRepository.unlockAccessPoint(
+        passId = passId,
+        accessPointId = accessPointId,
+        activity = activity
+    )
 }

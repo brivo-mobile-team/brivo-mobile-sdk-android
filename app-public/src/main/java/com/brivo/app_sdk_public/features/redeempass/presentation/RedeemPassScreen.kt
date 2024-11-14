@@ -116,15 +116,15 @@ fun RedeemPassForm(
 
         var emailValue by remember { mutableStateOf(TextFieldValue("")) }
         var tokenValue by remember { mutableStateOf(TextFieldValue("")) }
-        var regionValue by remember { mutableStateOf(true) }
+        var isRegionUS by remember { mutableStateOf(true) }
 
         Switch(
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .padding(top = 24.dp),
-            checked = regionValue,
+            checked = isRegionUS,
             onCheckedChange = { newValue ->
-                regionValue = newValue
+                isRegionUS = newValue
                 onEvent(RedeemPassUIEvent.UpdateRegion(newValue))
             }
         )

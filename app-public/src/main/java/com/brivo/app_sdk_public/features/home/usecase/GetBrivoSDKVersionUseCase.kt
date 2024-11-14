@@ -5,5 +5,5 @@ import javax.inject.Inject
 
 class GetBrivoSDKVersionUseCase @Inject constructor() {
 
-    fun execute() = BrivoSDK.getInstance().version
+    fun execute() = BrivoSDK.version
 }

@@ -17,6 +17,9 @@ object BrivoSampleConstants {
     const val AUTH_URL_EU = "https://auth.eu.brivo.com"
     const val API_URL_EU = "https://pi.eu.brivo.com/api/"
 
+    const val ERROR_CODE_USER_SUSPENDED = 403
+    const val ERROR_CODE_AUTHENTICATION_EXCEPTION = 401
+
     const val SELECTED_SITE = "SELECTED_SITE"
     const val PASS_ID = "PASS_ID"
     const val SELECTED_ACCESS_POINT = "SELECTED_ACCESS_POINT"

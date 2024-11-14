@@ -8,7 +8,7 @@ sealed class RedeemPassUIEvent {
 
     data class UpdateToken(val newValue: TextFieldValue) : RedeemPassUIEvent()
 
-    data class UpdateRegion(val newValue: Boolean) : RedeemPassUIEvent()
+    data class UpdateRegion(val isRegionUS: Boolean) : RedeemPassUIEvent()
 
     data class UpdateAlertMessage(val message: String) : RedeemPassUIEvent()
 

@@ -7,6 +7,7 @@ import com.brivo.app_sdk_public.core.model.DomainState
 import com.brivo.app_sdk_public.core.usecase.InitializeBrivoSDKUseCase
 import com.brivo.app_sdk_public.features.redeempass.model.RedeemPassUIEvent
 import com.brivo.app_sdk_public.features.redeempass.usecase.RedeemMobilePassUseCase
+import com.brivo.sdk.enums.ServerRegion
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,7 +33,7 @@ class RedeemPassViewModel @Inject constructor(
                 updateToken(newValue = event.newValue)
             }
             is RedeemPassUIEvent.UpdateRegion -> {
-                updateRegion(newValue = event.newValue)
+                updateRegion(isRegionUS = event.isRegionUS)
             }
             is RedeemPassUIEvent.UpdateAlertMessage -> {
                 updateAlertMessage(alertMessage = event.message)
@@ -85,10 +86,17 @@ class RedeemPassViewModel @Inject constructor(
         }
     }
 
-    private fun updateRegion(newValue: Boolean) {
-        initializeBrivoSDKUseCase.execute(
-            isEURegion = !newValue
-        )
+    private fun updateRegion(isRegionUS: Boolean) {
+        if(isRegionUS){
+            initializeBrivoSDKUseCase.execute(
+                serverRegion = ServerRegion.UNITED_STATES
+            )
+        }
+        else {
+            initializeBrivoSDKUseCase.execute(
+                serverRegion = ServerRegion.EUROPE
+            )
+        }
     }
 
     private fun redeemPass() {

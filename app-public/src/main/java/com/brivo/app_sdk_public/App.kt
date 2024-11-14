@@ -4,6 +4,7 @@ import android.app.Application
 import com.brivo.app_sdk_public.core.usecase.InitializeBrivoSDKUseCase
 import com.brivo.sdk.BrivoLog
 import com.brivo.sdk.activitydelegate.BrivoSdkActivityDelegate
+import com.brivo.sdk.enums.ServerRegion
 import com.brivo.sdk.model.BrivoError
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -26,7 +27,7 @@ class App : Application(), BrivoSdkActivityDelegate {
     }
 
     private fun initializeBrivoMobileSDK() {
-        initializeBrivoSDKUseCase.execute()
+        initializeBrivoSDKUseCase.execute(serverRegion = ServerRegion.UNITED_STATES)
     }
 
     override fun log(message: String) {

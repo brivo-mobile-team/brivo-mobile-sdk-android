@@ -1,15 +1,18 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
 }
-val CLIENT_ID: String by properties
-val CLIENT_SECRET: String by properties
+val CLIENT_ID_PROD: String by properties
+val CLIENT_SECRET_PROD: String by properties
 val CLIENT_ID_EU: String by properties
 val CLIENT_SECRET_EU: String by properties
 val gitHubGradleAccessToken: String? by properties
+
+val VERSION_NAME:String? by properties
 
 android {
     namespace = "com.brivo.app_sdk_public"
@@ -20,14 +23,14 @@ android {
         minSdk = 29
         targetSdk = 34
         versionCode = 1
-        versionName = "1.22.0"
+        versionName = VERSION_NAME?.removeSurrounding("\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
-        buildConfigField("String", "CLIENT_ID", CLIENT_ID)
-        buildConfigField("String", "CLIENT_SECRET", CLIENT_SECRET)
+        buildConfigField("String", "CLIENT_ID", CLIENT_ID_PROD)
+        buildConfigField("String", "CLIENT_SECRET", CLIENT_SECRET_PROD)
         buildConfigField("String", "CLIENT_ID_EU", CLIENT_ID_EU)
         buildConfigField("String", "CLIENT_SECRET_EU", CLIENT_SECRET_EU)
     }
@@ -53,18 +56,18 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_11.toString()
+    }
+    composeCompiler {
+        includeSourceInformation = true
     }
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.10"
     }
     packaging {
         resources {
@@ -81,7 +84,7 @@ fun checkGithubAccessToken(gitHubGradleAccessToken: String?): Boolean =
 
 dependencies {
 
-    val brivo_sdk_version = "1.22.0"
+    val brivo_sdk_version = "2.0.0"
     if (checkGithubAccessToken(gitHubGradleAccessToken)) {
         // Allegion SDK Module
         implementation("com.allegion:MobileAccessSDK:latest.release")

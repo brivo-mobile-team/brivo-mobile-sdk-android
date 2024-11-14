@@ -9,7 +9,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.brivo.app_sdk_public.App
 import com.brivo.app_sdk_public.features.unlockdoor.model.DoorState
-import com.brivo.app_sdk_public.features.unlockdoor.model.UnlockDoorListener
 import com.brivo.app_sdk_public.features.unlockdoor.model.UnlockDoorUIEvent
 import com.brivo.app_sdk_public.features.unlockdoor.navigation.UnlockDoorArgs
 import com.brivo.app_sdk_public.features.unlockdoor.usecase.InitializeBrivoSDKLocalAuthUseCase
@@ -105,7 +104,6 @@ class UnlockDoorViewModel @Inject constructor(
             }
         }
     }
-
     private fun initBrivoSDKLocalAuth(
         title: String,
         message: String,
@@ -173,14 +171,10 @@ class UnlockDoorViewModel @Inject constructor(
         viewModelScope.launch {
             updateDoorState(DoorState.UNLOCKING)
             unlockNearestBLEAccessPointUseCase.execute(
-                cancellationSignal = cancellationSignal,
-                listener = object : UnlockDoorListener {
-                    override fun onUnlockDoorEvent(result: BrivoResult) {
-                        processUnlockDoorEvent(result)
-                    }
-                },
                 activity = activity
-            )
+            ).collect {
+                processUnlockDoorEvent(it)
+            }
         }
     }
 
@@ -190,14 +184,11 @@ class UnlockDoorViewModel @Inject constructor(
             unlockDoorUseCase.execute(
                 passId = unlockDoorArgs.passId,
                 accessPointId = unlockDoorArgs.accessPointId,
-                cancellationSignal = cancellationSignal,
-                listener = object : UnlockDoorListener {
-                    override fun onUnlockDoorEvent(result: BrivoResult) {
-                        processUnlockDoorEvent(result)
-                    }
-                },
                 activity = activity
-            )
+
+            ).collect {
+                processUnlockDoorEvent(it)
+            }
         }
     }
 
@@ -213,13 +204,16 @@ class UnlockDoorViewModel @Inject constructor(
                 }
 
                 AccessPointCommunicationState.SHOULD_CONTINUE -> {
-                    result.shouldContinueListener?.onShouldContinue(true)
+                    BrivoLog.i("should continue")
                 }
 
                 AccessPointCommunicationState.SCANNING -> BrivoLog.i("scanning")
                 AccessPointCommunicationState.AUTHENTICATE -> BrivoLog.i("authenticate")
                 AccessPointCommunicationState.CONNECTING -> BrivoLog.i("connecting")
                 AccessPointCommunicationState.COMMUNICATING -> BrivoLog.i("communicating")
+                AccessPointCommunicationState.ON_CLOSEST_READER -> {
+                    // TODO
+                }
             }
         }
     }

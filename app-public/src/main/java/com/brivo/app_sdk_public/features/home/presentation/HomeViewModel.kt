@@ -3,6 +3,7 @@ package com.brivo.app_sdk_public.features.home.presentation
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.brivo.app_sdk_public.BrivoSampleConstants
 import com.brivo.app_sdk_public.core.model.DomainState
 import com.brivo.app_sdk_public.features.home.model.BrivoOnairPassUIModel
 import com.brivo.app_sdk_public.features.home.model.HomeUIEvent
@@ -121,7 +122,39 @@ class HomeViewModel @Inject constructor(
                     }
 
                     is DomainState.Failed -> {
-                        updateAlertMessage(result.error)
+                        var alertMessage = "Something went wrong, please try again!"
+
+                        when (result.errorCode) {
+                            BrivoSampleConstants.ERROR_CODE_USER_SUSPENDED -> {
+                                _state.update { currentState ->
+                                    currentState.copy(
+                                        refreshing = false,
+                                        loading = false,
+                                        passes = listOf()
+                                    )
+                                }
+                                alertMessage = "User suspended"
+                            }
+                            BrivoSampleConstants.ERROR_CODE_AUTHENTICATION_EXCEPTION -> {
+                                _state.update { currentState ->
+                                    currentState.copy(
+                                        refreshing = false,
+                                        loading = false,
+                                        passes = listOf()
+                                    )
+                                }
+                                alertMessage = "Authentication exception"
+                            }
+                            else -> {
+                                _state.update { currentState ->
+                                    currentState.copy(
+                                        refreshing = false,
+                                        loading = false
+                                    )
+                                }
+                            }
+                        }
+                        updateAlertMessage(alertMessage = alertMessage)
                     }
                 }
             }
