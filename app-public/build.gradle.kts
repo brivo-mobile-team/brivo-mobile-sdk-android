@@ -84,7 +84,7 @@ fun checkGithubAccessToken(gitHubGradleAccessToken: String?): Boolean =
 
 dependencies {
 
-    val brivo_sdk_version = "2.0.0"
+    val brivo_sdk_version = "8fe284b39e"
     if (checkGithubAccessToken(gitHubGradleAccessToken)) {
         // Allegion SDK Module
         implementation("com.allegion:MobileAccessSDK:latest.release")
