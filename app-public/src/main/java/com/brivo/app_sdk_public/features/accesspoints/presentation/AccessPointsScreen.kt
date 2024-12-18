@@ -135,7 +135,7 @@ fun AccessPointsList(
                 ) {
                     val drawable = when (accessPoint.doorType) {
                         DoorType.INTERNET -> R.drawable.ic_net
-                        DoorType.ALLEGION -> R.drawable.ic_engage
+                        DoorType.ALLEGION, DoorType.ALLEGION_BLE -> R.drawable.ic_engage
                         DoorType.WAVELYNX -> R.drawable.ic_brivo
                         else -> null
                     }

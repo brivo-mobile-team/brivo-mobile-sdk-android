@@ -46,20 +46,35 @@ class AccessPointsViewModel @Inject constructor(
             when (val result = getBrivoSDKLocallyStoredPassesUseCase.execute()) {
                 is DomainState.Success -> {
                     result.data?.let { data ->
-                        val pass = data.entries.first { entry ->
+                        val pass = data.entries.firstOrNull { entry ->
                             entry.key == accessPointArgs.passId
-                        }.value
-                        val site = pass.sites.first { site ->
-                            site.id == accessPointArgs.siteId
-                        }
-                        _state.update {
-                            it.copy(
-                                accessPoints = site.accessPoints.map { accessPoint -> accessPoint.toAccessPointUIModel() },
-                                siteName = site.siteName,
-                                loading = false
-                            )
+                        }?.value
+
+                        pass?.let { passValue ->
+                            val site = passValue.sites.firstOrNull { site ->
+                                site.id == accessPointArgs.siteId
+                            }
+
+                            site?.let { siteValue ->
+                                _state.update {
+                                    it.copy(
+                                        accessPoints = siteValue.accessPoints.map { accessPoint -> accessPoint.toAccessPointUIModel() },
+                                        siteName = siteValue.siteName,
+                                        loading = false
+                                    )
+                                }
+                            } ?: run {
+                                _state.update {
+                                    it.copy(loading = false)
+                                }
+                            }
+                        } ?: run {
+                            _state.update {
+                                it.copy(loading = false)
+                            }
                         }
                     }
+
                 }
                 is DomainState.Failed -> {
                     updateAlertMessage(result.error)

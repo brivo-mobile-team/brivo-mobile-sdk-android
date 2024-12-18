@@ -16,12 +16,12 @@ val VERSION_NAME:String? by properties
 
 android {
     namespace = "com.brivo.app_sdk_public"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.brivo.app_sdk_public"
         minSdk = 29
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = VERSION_NAME?.removeSurrounding("\"")
 
@@ -84,7 +84,7 @@ fun checkGithubAccessToken(gitHubGradleAccessToken: String?): Boolean =
 
 dependencies {
 
-    val brivo_sdk_version = "8fe284b39e"
+    val brivo_sdk_version = "ed2b122e68"
     if (checkGithubAccessToken(gitHubGradleAccessToken)) {
         // Allegion SDK Module
         implementation("com.allegion:MobileAccessSDK:latest.release")
@@ -97,33 +97,37 @@ dependencies {
     implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivocore:$brivo_sdk_version")
     implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivolocalauthentication:$brivo_sdk_version")
     implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoonair:$brivo_sdk_version")
+    implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivo-hidorigo:$brivo_sdk_version")
 
-    implementation(platform("androidx.compose:compose-bom:2024.06.00"))
+    debugImplementation (files("../brivo-hidorigo/lib/origo-sdk-debug-3.3.0.aar"))
+    releaseImplementation (files("../brivo-hidorigo/lib/origo-sdk-release-3.3.0.aar"))
+
+    implementation(platform("androidx.compose:compose-bom:2024.10.00"))
     implementation("com.karumi:dexter:6.2.3")
     implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
-    implementation("androidx.activity:activity-compose:1.8.2")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
+    implementation("androidx.activity:activity-compose:1.9.3")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material:1.6.8")
-    implementation("androidx.navigation:navigation-compose:2.7.7")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("androidx.compose.material:material:1.7.4")
+    implementation("androidx.navigation:navigation-compose:2.8.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     implementation("com.google.android.material:material:1.12.0")
-    implementation("com.google.dagger:hilt-android:2.49")
-    kapt("com.google.dagger:hilt-compiler:2.49")
+    implementation("com.google.dagger:hilt-android:2.52")
+    kapt("com.google.dagger:hilt-compiler:2.52")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     kapt("androidx.hilt:hilt-compiler:1.2.0")
 
-    debugImplementation("androidx.compose.ui:ui-tooling:1.6.8")
+    debugImplementation("androidx.compose.ui:ui-tooling:1.7.4")
 
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.8")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.8")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.7.4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.4")
 
     testImplementation("junit:junit:4.13.2")
 }
