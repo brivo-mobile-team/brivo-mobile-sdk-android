@@ -166,7 +166,7 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
         accessPointId: String,
         activity: FragmentActivity
     ): Flow<BrivoResult> {
-        return BrivoSDKAccess.getInstance().unlockAccessPoint(
+        return BrivoSDKAccess.unlockAccessPoint(
             passId = passId,
             accessPointId = accessPointId,
             activity = activity
@@ -176,7 +176,7 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
     override fun unlockNearestBLEAccessPoint(
         activity: FragmentActivity,
     ): Flow<BrivoResult> {
-        return BrivoSDKAccess.getInstance().unlockNearestBLEAccessPoint(
+        return BrivoSDKAccess.unlockNearestBLEAccessPoint(
             activity = activity,
         )
     }
