@@ -10,7 +10,6 @@ import com.brivo.sdk.BrivoLog
 import com.brivo.sdk.BrivoSDK
 import com.brivo.sdk.BrivoSDKInitializationException
 import com.brivo.sdk.access.BrivoSDKAccess
-import com.brivo.sdk.ble.allegion.BrivoSDKBLEAllegion
 import com.brivo.sdk.enums.ServerRegion
 import com.brivo.sdk.localauthentication.BrivoSDKLocalAuthentication
 import com.brivo.sdk.model.BrivoConfiguration
@@ -52,10 +51,11 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
             return DomainState.Failed(e.message!!)
         }
         try {
-            val result = BrivoSDKBLEAllegion.init()
-            if(result is BrivoSDKApiState.Failed) {
-                BrivoLog.e("Failed to initialize BrivoSDKBLEAllegion: ${result.brivoError.message}")
-            }
+            //TODO uncomment if using allegion SDK
+//            val result = BrivoSDKBLEAllegion.init()
+//            if(result is BrivoSDKApiState.Failed) {
+//                BrivoLog.e("Failed to initialize BrivoSDKBLEAllegion: ${result.brivoError.message}")
+//            }
         } catch (e: BrivoSDKInitializationException) {
             return DomainState.Failed(e.message ?: "Failed to initialize BrivoSDKBLEAllegion")
         }
@@ -64,13 +64,15 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
     }
 
     override suspend fun refreshAllegionCredentials(passes: List<BrivoOnairPass>) {
+        //TODO uncomment if using allegion SDK
         passes.forEach {
-            BrivoSDKBLEAllegion.refreshCredentials(it)
+//            BrivoSDKBLEAllegion.refreshCredentials(it)
         }
     }
 
     override suspend fun refreshAllegionCredential(pass: BrivoOnairPass) {
-        BrivoSDKBLEAllegion.refreshCredentials(pass)
+        //TODO uncomment if using allegion SDK
+//        BrivoSDKBLEAllegion.refreshCredentials(pass)
     }
 
     override fun initLocalAuth(
