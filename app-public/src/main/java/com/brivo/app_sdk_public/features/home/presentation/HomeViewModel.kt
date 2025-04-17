@@ -63,14 +63,13 @@ class HomeViewModel @Inject constructor(
 
     private fun refreshAllegionCredentials() {
         viewModelScope.launch {
-            when (val result = getBrivoSDKLocallyStoredPassesUseCase.execute()) {
+            when (refreshAllegionCredentialsUseCase.execute()) {
                 is DomainState.Failed -> {
-                    Log.d("HomeViewModel", "Failed to get passes")
+                    Log.d("HomeViewModel", "Failed to refresh allegion credentials")
                 }
 
                 is DomainState.Success -> {
-                    result.data?.values?.toList()
-                        ?.let { refreshAllegionCredentialsUseCase.execute(it) }
+                    Log.d("HomeViewModel", "Success refresh allegion credentials")
                 }
             }
         }

@@ -14,7 +14,7 @@ import com.brivo.app_sdk_public.features.unlockdoor.navigation.UnlockDoorArgs
 import com.brivo.app_sdk_public.features.unlockdoor.usecase.InitializeBrivoSDKLocalAuthUseCase
 import com.brivo.app_sdk_public.features.unlockdoor.usecase.UnlockDoorUseCase
 import com.brivo.app_sdk_public.features.unlockdoor.usecase.UnlockNearestBLEAccessPointUseCase
-import com.brivo.sdk.BrivoLog
+import com.brivo.sdk.ble.core.BrivoLog
 import com.brivo.sdk.enums.AccessPointCommunicationState
 import com.brivo.sdk.model.BrivoResult
 import com.karumi.dexter.Dexter

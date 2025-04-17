@@ -29,9 +29,7 @@ interface BrivoMobileSDKRepository {
         accessToken: String?
     ): DomainState<BrivoOnairPass?>
 
-    suspend fun refreshAllegionCredentials(passes: List<BrivoOnairPass>)
-
-    suspend fun refreshAllegionCredential(pass: BrivoOnairPass)
+    suspend fun refreshAllegionCredentials(): DomainState<Unit>
 
     fun unlockAccessPoint(
         passId: String,

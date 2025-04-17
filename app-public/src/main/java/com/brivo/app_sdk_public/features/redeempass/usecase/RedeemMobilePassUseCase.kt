@@ -1,8 +1,8 @@
 package com.brivo.app_sdk_public.features.redeempass.usecase
 
-import com.brivo.sdk.onair.model.BrivoOnairPass
 import com.brivo.app_sdk_public.core.model.DomainState
 import com.brivo.app_sdk_public.core.repository.BrivoMobileSDKRepositoryImpl
+import com.brivo.sdk.onair.model.BrivoOnairPass
 import javax.inject.Inject
 
 class RedeemMobilePassUseCase @Inject constructor(
@@ -16,7 +16,7 @@ class RedeemMobilePassUseCase @Inject constructor(
             }
 
             is DomainState.Success -> {
-                result.data?.let { brivoSdkMobileRepository.refreshAllegionCredential(it) }
+                brivoSdkMobileRepository.refreshAllegionCredentials()
                 DomainState.Success(result.data)
             }
         }

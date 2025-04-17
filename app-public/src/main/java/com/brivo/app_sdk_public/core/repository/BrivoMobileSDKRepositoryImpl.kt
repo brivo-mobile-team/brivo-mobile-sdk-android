@@ -5,8 +5,6 @@ import androidx.fragment.app.FragmentActivity
 import com.brivo.app_sdk_public.App
 import com.brivo.app_sdk_public.BrivoSampleConstants
 import com.brivo.app_sdk_public.core.model.DomainState
-import com.brivo.app_sdk_public.core.utils.BrivoSdkActivityDelegateImpl
-import com.brivo.sdk.BrivoLog
 import com.brivo.sdk.BrivoSDK
 import com.brivo.sdk.BrivoSDKInitializationException
 import com.brivo.sdk.access.BrivoSDKAccess
@@ -24,7 +22,6 @@ import javax.inject.Inject
 
 @SuppressLint("RestrictedApi")
 class BrivoMobileSDKRepositoryImpl @Inject constructor(
-    private val brivoSdkActivityDelegate: BrivoSdkActivityDelegateImpl
 ) : BrivoMobileSDKRepository {
 
     override fun init(serverRegion: ServerRegion): DomainState<Unit> {
@@ -53,9 +50,6 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
         }
         try {
             val result = BrivoSDKBLEAllegion.init()
-            if(result is BrivoSDKApiState.Failed) {
-                BrivoLog.e("Failed to initialize BrivoSDKBLEAllegion: ${result.brivoError.message}")
-            }
         } catch (e: BrivoSDKInitializationException) {
             return DomainState.Failed(e.message ?: "Failed to initialize BrivoSDKBLEAllegion")
         }
@@ -63,15 +57,27 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
         return DomainState.Success(Unit)
     }
 
-    override suspend fun refreshAllegionCredentials(passes: List<BrivoOnairPass>) {
-        passes.forEach {
-            BrivoSDKBLEAllegion.refreshCredentials(it)
+    override suspend fun refreshAllegionCredentials(): DomainState<Unit> {
+        val passes = retrieveSDKLocallyStoredPasses()
+        if (passes is DomainState.Success) {
+            val refreshAllegionResult = passes.data?.values?.toList()?.let {
+                BrivoSDKBLEAllegion.refreshCredentials(it)
+            }
+
+            return when (refreshAllegionResult) {
+                is BrivoSDKApiState.Failed -> {
+                    DomainState.Failed(refreshAllegionResult.brivoError.toString())
+                }
+
+                else -> {
+                    DomainState.Success(Unit)
+                }
+            }
+        } else {
+            return DomainState.Failed("Failed to get passes")
         }
     }
 
-    override suspend fun refreshAllegionCredential(pass: BrivoOnairPass) {
-        BrivoSDKBLEAllegion.refreshCredentials(pass)
-    }
 
     override fun initLocalAuth(
         title: String,
