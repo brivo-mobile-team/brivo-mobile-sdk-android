@@ -705,6 +705,7 @@ object BrivoOnairErrorCodes {
     const val ONAIR_AUTHENTICATION_UNABLE_TO_REFRESH_TOKEN: Int = -3009
     const val ONAIR_TRUSTED_NETWORK_LOCATION_PERMISSION_NOT_GRANTED: Int = -3010
     const val ONAIR_RETRIEVE_BLE_SECURITY_TOKENS_FAILED: Int = -3011
+    const val ONAIR_HID_ORIGO_INVITATION_CODE_ERROR: Int = -4000
 }
 ```
 
@@ -726,6 +727,40 @@ object BrivoBLEErrorCodes {
     const val BLE_CONNECTION_MISSING_BLE_CREDENTIALS: Int = -2011
     const val BLE_DEVICE_DISCONNECTED: Int = -2012
     const val BLE_BLUETOOTH_PERMISSION_NOT_GRANTED: Int = -2013
+}
+```
+
+## Brivo BLE  Allegion Errors
+
+```kotlin
+object BrivoBLEAllegionErrorCodes {
+    const val HAS_ONGOING_OPERATION_ERROR = -6000
+    const val ALLEGION_SDK_DEPENDENCY_NOT_FOUND = -6001
+    const val NO_MATCHING_BLE_DEVICE_FOUND = -6002
+    const val NO_BLE_RIGHTS_FOUND = -6004
+    const val NO_BLE_ACCESS_PAYLOAD_FOUND = -6006
+    const val FAILED_TO_REFRESH_CREDENTIALS = -6008
+    const val REQUEST_ACCESS_FAILED = -6012
+    const val PASS_NOT_ELIGIBLE = -6013
+    const val DISCONNECT_DEVICE_FAILED = -6014
+}
+```
+
+## Brivo HID Origo Errors
+
+```kotlin
+object BrivoHIDOrigoErrorCodes {
+    const val UNKNOWN_ERROR = -8000
+    const val NO_CREDENTIALS_FOUND = -8001
+    const val REQUEST_ACCESS_FAILED = -8002
+    const val REDEEM_INVITATION_CODE_FAILED = -8003
+    const val NO_MATCHING_BLE_DEVICE_FOUND = -8004
+    const val CLEAR_CREDENTIALS_FAILED = -8005
+    const val REFRESH_CREDENTIALS_FAILED = -8006
+    const val LOCATION_PERMISSION_NOT_GRANTED = -8007
+    const val SDK_IS_BUSY = -8008
+    const val NOT_ELIGIBLE = -8009
+    const val EMPTY_INVITATION_CODE = -8010
 }
 ```
 
