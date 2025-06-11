@@ -6,7 +6,8 @@ on:
       new_version:
         description: 'New version of brivo_sdk'
         required: true
-        default: '2.3.1'
+        default: '2.3.1' 
+  pull_request:
 
 jobs:
   update-version:
