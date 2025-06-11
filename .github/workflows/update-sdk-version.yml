@@ -1,0 +1,49 @@
+name: Update SDK Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      new_version:
+        description: 'New version of brivo_sdk'
+        required: true
+        default: '2.3.1'
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'  # Adjust based on your Gradle project's JDK
+
+      - name: Replace SDK Version
+        run: |
+          file_path="app-public/build.gradle.kts"
+          version_input="${{ github.event.inputs.new_version }}"
+          sed -i "s/val brivo_sdk_version = \".*\"/val brivo_sdk_version = \"${version_input}\"/" "$file_path"
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add app-public/build.gradle
+          git commit -m "Update brivo_sdk_version to ${{ github.event.inputs.new_version }}"
+          git push
+
+      - name: Grant execute permission to Gradle wrapper
+        run: chmod +x ./gradlew
+
+      - name: Build Project
+        run: ./gradlew build
+
+      # Optional: Assemble debug APK (for Android projects)
+      - name: Assemble Debug APK
+        run: ./gradlew assembleDebug
+
