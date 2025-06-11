@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'  # Adjust based on your Gradle project's JDK
+          java-version: '17'
 
       - name: Replace SDK Version
         run: |
@@ -32,9 +32,8 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-          git add app-public/build.gradle
-          git commit -m "Update brivo_sdk_version to ${{ github.event.inputs.new_version }}"
+          git add app-public/build.gradle.kts
+          git commit -m "Update brivo_sdk_version to ${{ github.event.inputs.new_version }}" || echo "No changes to commit"
           git push
 
       - name: Grant execute permission to Gradle wrapper
@@ -43,7 +42,5 @@ jobs:
       - name: Build Project
         run: ./gradlew build
 
-      # Optional: Assemble debug APK (for Android projects)
       - name: Assemble Debug APK
         run: ./gradlew assembleDebug
-
