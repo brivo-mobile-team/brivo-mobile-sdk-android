@@ -16,6 +16,9 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          ref: automate-workflow-test
+          fetch-depth: 0
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -29,14 +32,6 @@ jobs:
           version_input="${{ github.event.inputs.new_version }}"
           sed -i "s/val brivo_sdk_version = \".*\"/val brivo_sdk_version = \"${version_input}\"/" "$file_path"
 
-      - name: Commit and Push Changes
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add app-public/build.gradle.kts
-          git commit -m "Update brivo_sdk_version to ${{ github.event.inputs.new_version }}" || echo "No changes to commit"
-          git push
-
       - name: Grant execute permission to Gradle wrapper
         run: chmod +x ./gradlew
 
@@ -44,4 +39,12 @@ jobs:
         run: ./gradlew build
 
       - name: Assemble Debug APK
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleDebug 
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add app-public/build.gradle.kts
+          git commit -m "Update brivo_sdk_version to ${{ github.event.inputs.new_version }}" || echo "No changes to commit"
+          git push origin HEAD:automate-workflow-test
