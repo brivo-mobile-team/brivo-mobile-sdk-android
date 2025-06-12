@@ -35,6 +35,9 @@ jobs:
       - name: Grant execute permission to Gradle wrapper
         run: chmod +x ./gradlew
 
+      - name: Gradle Sync (Check Dependencies)
+        run: ./gradlew dependencies  
+
       - name: Build Project
         run: ./gradlew build
 
