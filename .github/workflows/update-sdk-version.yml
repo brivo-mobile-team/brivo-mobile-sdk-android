@@ -36,7 +36,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Gradle Sync (Check Dependencies)
-        run: ./gradle wrapper
+        run: ./gradlew wrapper
 
       - name: Build Project
         run: ./gradlew build
