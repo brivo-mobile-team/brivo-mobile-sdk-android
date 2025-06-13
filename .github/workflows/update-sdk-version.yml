@@ -57,3 +57,13 @@ jobs:
           git add app-public/build.gradle.kts
           git commit -m "Update brivo_sdk_version to ${{ github.event.inputs.new_version }}" || echo "No changes to commit"
           git push origin HEAD:automate-workflow-test
+      
+      - name: Create Draft GitHub Release
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create “v${{ github.event.inputs.new_version }}” \
+          --target main 
+          --title “v${{ github.event.inputs.new_version }}” \
+          --notes “Draft release for version v${{ github.event.inputs.new_version }}” \
+          --draft \
