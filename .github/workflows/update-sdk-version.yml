@@ -6,7 +6,7 @@ on:
       new_version:
         description: 'New version of brivo_sdk'
         required: true
-        default: '2.3.1' 
+        default: '2.3.0' 
   pull_request:
 
 jobs:
@@ -29,7 +29,8 @@ jobs:
       - name: Replace SDK Version
         run: |
           file_path="app-public/build.gradle.kts"
-          version_input="${{ github.event.inputs.new_version }}" 
+          # version_input="${{ github.event.inputs.new_version }}" 
+          version_input="2.3.0"
           if [ -z "$version_input" ]; then
               echo "Error: new_version input is empty or not set."
               exit 1
