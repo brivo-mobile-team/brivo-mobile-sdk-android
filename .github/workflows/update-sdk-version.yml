@@ -29,8 +29,7 @@ jobs:
       - name: Replace SDK Version
         run: |
           file_path="app-public/build.gradle.kts"
-          # version_input="${{ github.event.inputs.new_version }}" 
-          version_input="2.3.0"
+          version_input="${{ github.event.inputs.new_version }}" 
           if [ -z "$version_input" ]; then
               echo "Error: new_version input is empty or not set."
               exit 1
@@ -50,14 +49,29 @@ jobs:
       - name: Assemble Debug APK
         run: ./gradlew assembleDebug 
 
-      - name: Commit and Push Changes
+      - name: Create release branch, commit and Push Changes
         run: |
+          BRANCH_NAME=release/${{ github.event.inputs.new_version }}
+  
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b "$BRANCH_NAME"
+
           git add app-public/build.gradle.kts
           git commit -m "Update brivo_sdk_version to ${{ github.event.inputs.new_version }}" || echo "No changes to commit"
-          git push origin HEAD:automate-workflow-test
+          
+          git push origin "$BRANCH_NAME"
       
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: main
+          title: "Release ${{ github.event.inputs.new_version }}"
+          body: "This PR updates brivo_sdk_version to `${{ github.event.inputs.new_version }}`."
+          branch: release/${{ github.event.inputs.new_version }}
+
       - name: Create Draft GitHub Release
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
