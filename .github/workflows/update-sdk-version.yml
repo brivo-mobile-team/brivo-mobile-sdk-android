@@ -67,14 +67,14 @@ jobs:
         run: |
           gh pr create \
           --title "Release ${{ github.event.inputs.new_version }}" \
-          --body "This PR updates brivo_sdk_version to `${{ github.event.inputs.new_version }}`." \
+          --body "This PR updates brivo_sdk_version to ${{ github.event.inputs.new_version }}." \
           --base main
 
       - name: Create Draft GitHub Release
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "v${{ github.event.inputs.new_version }}" \
+          gh release create "${{ github.event.inputs.new_version }}" \
           --target main \
           --title "v${{ github.event.inputs.new_version }}" \
           --notes "Draft release for version v${{ github.event.inputs.new_version }}" \
