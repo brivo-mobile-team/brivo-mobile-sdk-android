@@ -49,7 +49,7 @@ jobs:
 
       - name: Create release branch, commit and Push Changes
         run: |
-          BRANCH_NAME=release/${{ github.event.inputs.new_version }}
+          BRANCH_NAME=release-${{ github.event.inputs.new_version }}
   
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
