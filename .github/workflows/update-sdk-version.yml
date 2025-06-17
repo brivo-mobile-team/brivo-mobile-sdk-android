@@ -68,7 +68,7 @@ jobs:
           base: main
           title: "Release ${{ github.event.inputs.new_version }}"
           body: "This PR updates brivo_sdk_version to `${{ github.event.inputs.new_version }}`."
-          branch: release/${{ github.event.inputs.new_version }}
+          branch: release-${{ github.event.inputs.new_version }}
 
       - name: Create Draft GitHub Release
         env:
