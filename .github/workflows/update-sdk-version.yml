@@ -1,0 +1,81 @@
+name: Update SDK Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      new_version:
+        description: 'New version of brivo_sdk'
+        required: true
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: automate-workflow-test
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'corretto'
+          java-version: '17'
+
+      - name: Replace SDK Version
+        run: |
+          file_path="app-public/build.gradle.kts"
+          version_input="${{ github.event.inputs.new_version }}" 
+          if [ -z "$version_input" ]; then
+              echo "Error: new_version input is empty or not set."
+              exit 1
+          fi
+
+          sed -i "s/val brivo_sdk_version = \".*\"/val brivo_sdk_version = \"${version_input}\"/" "$file_path"
+
+      - name: Grant execute permission to Gradle wrapper
+        run: chmod +x ./gradlew
+
+      - name: Gradle Sync (Check Dependencies)
+        run: ./gradlew wrapper
+
+     #  - name: Build Project
+     #   run: ./gradlew build
+
+      - name: Assemble Debug APK
+        run: ./gradlew assembleDebug 
+
+      - name: Create release branch, commit and Push Changes
+        run: |
+          BRANCH_NAME=release/${{ github.event.inputs.new_version }}
+  
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b "$BRANCH_NAME"
+
+          git add app-public/build.gradle.kts
+          git commit -m "Update brivo_sdk_version to ${{ github.event.inputs.new_version }}" || echo "No changes to commit"
+          
+          git push origin "$BRANCH_NAME"
+      
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: main
+          title: "Release ${{ github.event.inputs.new_version }}"
+          body: "This PR updates brivo_sdk_version to `${{ github.event.inputs.new_version }}`."
+          branch: release/${{ github.event.inputs.new_version }}
+
+      - name: Create Draft GitHub Release
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ github.event.inputs.new_version }}" \
+          --target main 
+          --title "v${{ github.event.inputs.new_version }}" \
+          --notes "Draft release for version v${{ github.event.inputs.new_version }}" \
+          --draft 
