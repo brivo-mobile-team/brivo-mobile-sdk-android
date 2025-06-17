@@ -3,13 +3,6 @@ package com.brivo.app_sdk_public.features.unlockdoor.model
 import androidx.fragment.app.FragmentActivity
 
 sealed class UnlockDoorUIEvent {
-
-    data object CheckPermissions : UnlockDoorUIEvent()
-
-    data object ResetBackgroundPermissionDialog : UnlockDoorUIEvent()
-
-    data object ResetBluetoothPermissionDialog : UnlockDoorUIEvent()
-
     data object DoorUnlocked : UnlockDoorUIEvent()
 
     data object DoorLocked : UnlockDoorUIEvent()

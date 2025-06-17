@@ -60,6 +60,7 @@ class AccessPointsViewModel @Inject constructor(
                                     it.copy(
                                         accessPoints = siteValue.accessPoints.map { accessPoint -> accessPoint.toAccessPointUIModel() },
                                         siteName = siteValue.siteName,
+                                        selectedSiteHasTrustedNetwork = site.hasTrustedNetwork,
                                         loading = false
                                     )
                                 }
@@ -97,6 +98,7 @@ class AccessPointsViewModel @Inject constructor(
         val passId: String = "",
         val siteName: String = "",
         val accessPoints: List<AccessPointUIModel> = emptyList(),
+        val selectedSiteHasTrustedNetwork: Boolean = false,
         val loading: Boolean = true,
         val alertMessage: String = ""
     )

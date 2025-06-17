@@ -84,7 +84,7 @@ fun checkGithubAccessToken(gitHubGradleAccessToken: String?): Boolean =
 
 dependencies {
 
-    val brivo_sdk_version = "2.3.0"
+    val brivo_sdk_version = "4e15ec03e4"
     if (checkGithubAccessToken(gitHubGradleAccessToken)) {
         // Allegion SDK Module
         implementation("com.allegion:MobileAccessSDK:5.0.1")
@@ -99,8 +99,8 @@ dependencies {
     implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoonair:$brivo_sdk_version")
 
 //    implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivo-hidorigo:$brivo_sdk_version")
-//    debugImplementation (files("../brivo-hidorigo/lib/origo-sdk-debug-3.3.1.aar"))
-//    releaseImplementation (files("../brivo-hidorigo/lib/origo-sdk-release-3.3.1.aar"))
+//    debugImplementation (files("../brivo-hidorigo/lib/origo-sdk-debug-3.4.0.aar"))
+//    releaseImplementation (files("../brivo-hidorigo/lib/origo-sdk-release-3.4.0.aar"))
 
     implementation(platform("androidx.compose:compose-bom:2024.11.00"))
     implementation("com.karumi:dexter:6.2.3")

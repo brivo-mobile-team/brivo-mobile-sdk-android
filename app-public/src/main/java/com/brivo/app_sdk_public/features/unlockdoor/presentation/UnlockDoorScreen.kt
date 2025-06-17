@@ -1,6 +1,6 @@
 package com.brivo.app_sdk_public.features.unlockdoor.presentation
 
-import android.content.Context
+import android.os.Build
 import android.widget.Toast
 import androidx.compose.animation.core.InfiniteRepeatableSpec
 import androidx.compose.animation.core.RepeatMode
@@ -16,8 +16,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
@@ -46,19 +44,20 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.lifecycleScope
+import com.brivo.app_sdk_public.MainActivity
 import com.brivo.app_sdk_public.R
-import com.brivo.app_sdk_public.core.utils.AppUtils
 import com.brivo.app_sdk_public.features.unlockdoor.model.DoorState
 import com.brivo.app_sdk_public.features.unlockdoor.model.UnlockDoorUIEvent
 import com.brivo.app_sdk_public.ui.theme.AppTheme
-import com.brivo.app_sdk_public.view.ComposableLifecycle
 import com.brivo.app_sdk_public.view.ThemedPreview
+import kotlinx.coroutines.launch
 
 @Composable
 fun UnlockDoorScreen(
     onBackPressed: () -> Unit,
-    viewModel: UnlockDoorViewModel = hiltViewModel()
+    viewModel: UnlockDoorViewModel = hiltViewModel(),
 ) {
 
     val context = LocalContext.current
@@ -75,95 +74,16 @@ fun UnlockDoorScreen(
         )
     }
 
-    ComposableLifecycle { _, event ->
-        if (event == Lifecycle.Event.ON_RESUME) {
-            viewModel.onEvent(UnlockDoorUIEvent.CheckPermissions)
-        } else if (event == Lifecycle.Event.ON_PAUSE) {
-            viewModel.onEvent(UnlockDoorUIEvent.CancelDoorUnlock)
-        }
-    }
-
     if (state.alertMessage.isNotEmpty()) {
         Toast.makeText(context, state.alertMessage, Toast.LENGTH_SHORT).show()
-    }
-
-    if (state.showLocationPermissionRationaleDialog) {
-        LocationPermissionDialog(
-            onDialogClosed = onBackPressed,
-            onEvent = viewModel::onEvent,
-            context = context
-        )
-    }
-    if (state.showBluetoothPermissionRationaleDialog) {
-        BluetoothPermissionDialog(
-            onDialogClosed = onBackPressed,
-            onEvent = viewModel::onEvent
-        )
     }
 
     UnlockDoorContent(
         doorState = state.doorState,
         accessPointName = state.accessPointName,
         showSnackbar = state.showSnackbar,
+        hasTrustedNetwork = state.hasTrustedNetwork,
         onEvent = viewModel::onEvent
-    )
-}
-
-@Composable
-fun LocationPermissionDialog(
-    onDialogClosed: () -> Unit,
-    onEvent: (UnlockDoorUIEvent) -> Unit,
-    context: Context
-) {
-    AlertDialog(
-        onDismissRequest = { onDialogClosed() },
-        title = { Text(stringResource(id = R.string.location_permission_dialog_title)) },
-        text = { Text(stringResource(id = R.string.location_permission_dialog_message)) },
-        confirmButton = {
-            Button(
-                onClick = {
-                    AppUtils.navigateToPermissionSettings(context)
-                    onEvent(UnlockDoorUIEvent.ResetBackgroundPermissionDialog)
-                }
-            ) {
-                Text(stringResource(id = R.string.alert_dialog_button_ok))
-            }
-        },
-        dismissButton = {
-            Button(
-                onClick = { onDialogClosed() }
-            ) {
-                Text(stringResource(id = R.string.alert_dialog_button_cancel))
-            }
-        }
-    )
-}
-
-@Composable
-fun BluetoothPermissionDialog(
-    onDialogClosed: () -> Unit,
-    onEvent: (UnlockDoorUIEvent) -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = { onDialogClosed() },
-        title = { Text(stringResource(id = R.string.bluetooth_permission_dialog_title)) },
-        text = { Text(stringResource(id = R.string.bluetooth_permission_dialog_message)) },
-        confirmButton = {
-            Button(
-                onClick = {
-                    onEvent(UnlockDoorUIEvent.ResetBluetoothPermissionDialog)
-                }
-            ) {
-                Text(stringResource(id = R.string.alert_dialog_button_ok))
-            }
-        },
-        dismissButton = {
-            Button(
-                onClick = { onDialogClosed() }
-            ) {
-                Text(stringResource(id = R.string.alert_dialog_button_cancel))
-            }
-        }
     )
 }
 
@@ -173,6 +93,7 @@ fun UnlockDoorContent(
     doorState: DoorState,
     accessPointName: String,
     showSnackbar: Boolean,
+    hasTrustedNetwork: Boolean,
     onEvent: (UnlockDoorUIEvent) -> Unit
 ) {
     Scaffold(
@@ -199,6 +120,7 @@ fun UnlockDoorContent(
             ) {
                 PulsatingLockButton(
                     doorState = doorState,
+                    hasTrustedNetwork = hasTrustedNetwork,
                     onEvent = onEvent
                 )
             }
@@ -220,15 +142,15 @@ fun UnlockResultSnackbar(doorState: DoorState) {
             Image(
                 modifier = Modifier.size(16.dp),
                 painter =
-                if (doorState == DoorState.UNLOCKED) painterResource(id = R.drawable.lock_open)
-                else painterResource(id = R.drawable.lock),
+                    if (doorState == DoorState.UNLOCKED) painterResource(id = R.drawable.lock_open)
+                    else painterResource(id = R.drawable.lock),
                 contentDescription = ""
             )
             Spacer(modifier = Modifier.size(16.dp))
             Text(
                 text =
-                if (doorState == DoorState.UNLOCKED) stringResource(id = R.string.unlock_door_success)
-                else stringResource(id = R.string.unlock_door_failed),
+                    if (doorState == DoorState.UNLOCKED) stringResource(id = R.string.unlock_door_success)
+                    else stringResource(id = R.string.unlock_door_failed),
                 color = Color.Black
             )
         }
@@ -241,7 +163,8 @@ fun PulsatingLockButton(
     nbPulsar: Int = 4,
     pulsarRadius: Float = 250f,
     pulsarColor: Color = MaterialTheme.colorScheme.primary,
-    onEvent: (UnlockDoorUIEvent) -> Unit
+    hasTrustedNetwork: Boolean,
+    onEvent: (UnlockDoorUIEvent) -> Unit,
 ) {
     var fabSize by remember { mutableStateOf(IntSize(0, 0)) }
     val effects: List<Pair<Float, Float>> = List(nbPulsar) {
@@ -272,7 +195,8 @@ fun PulsatingLockButton(
                     }
                 },
             doorState = doorState,
-            onEvent = onEvent
+            hasTrustedNetwork = hasTrustedNetwork,
+            onEvent = onEvent,
         )
     }
 }
@@ -281,14 +205,33 @@ fun PulsatingLockButton(
 fun PulsatingLockButtonContent(
     modifier: Modifier,
     doorState: DoorState,
-    onEvent: (UnlockDoorUIEvent) -> Unit
+    hasTrustedNetwork: Boolean,
+    onEvent: (UnlockDoorUIEvent) -> Unit,
 ) {
 
     val activity = LocalContext.current as FragmentActivity
 
+    val locationPermissionRequest = (activity as MainActivity).locationPermissionRequest
+    val bluetoothPermissionRequest = activity.bluetoothPermissionRequest
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
     IconButton(
         modifier = Modifier.size(250.dp),
-        onClick = { if (doorState == DoorState.LOCKED) onEvent(UnlockDoorUIEvent.UnlockDoor(activity = activity)) }
+        onClick = {
+            if (doorState == DoorState.LOCKED) {
+                lifecycleOwner.lifecycleScope.launch {
+                    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R || hasTrustedNetwork) {
+                        locationPermissionRequest.requestFineAndCoarseLocation()
+                    }
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        bluetoothPermissionRequest.requestBluetoothPermissions()
+                    }
+                    onEvent(UnlockDoorUIEvent.UnlockDoor(activity = activity))
+                }
+            }
+        }
     ) {
         Image(
             painter = painterResource(
@@ -343,6 +286,7 @@ fun UnlockDoorPreview() {
             doorState = DoorState.LOCKED,
             accessPointName = "accessPointName",
             showSnackbar = true,
+            hasTrustedNetwork = false,
             onEvent = { }
         )
     }

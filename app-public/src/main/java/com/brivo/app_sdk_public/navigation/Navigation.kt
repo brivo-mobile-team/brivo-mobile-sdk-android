@@ -45,11 +45,12 @@ fun MainNavigation(
                 unlockDoorScreen(onBackPressed = { navController.navigateUp()})
                 redeemPassScreen(onBackPressed = { navController.navigateUp()} )
                 accessPointsScreen(
-                    onAccessPointPressed = { passId, accessPointId, accessPointName ->
+                    onAccessPointPressed = { passId, accessPointId, accessPointName, hasTrustedNetwork ->
                         navController.navigateUnlockDoorScreen(
                             passId = passId,
                             accessPointId = accessPointId,
-                            accessPointName = accessPointName
+                            accessPointName = accessPointName,
+                            hasTrustedNetwork = hasTrustedNetwork
                         )
                     }
                 )
