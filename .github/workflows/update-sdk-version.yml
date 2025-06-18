@@ -76,6 +76,6 @@ jobs:
         run: |
           gh release create "${{ github.event.inputs.new_version }}" \
           --target main \
-          --title "v${{ github.event.inputs.new_version }}" \
+          --title "${{ github.event.inputs.new_version }}" \
           --notes "Draft release for version v${{ github.event.inputs.new_version }}" \
           --draft 
