@@ -26,14 +26,14 @@ jobs:
 
       - name: Replace SDK Version
         run: |
-          file_path="app-public/build.gradle.kts"
+          file_path="build.gradle.kts"
           version_input="${{ github.event.inputs.new_version }}" 
           if [ -z "$version_input" ]; then
               echo "Error: new_version input is empty or not set."
               exit 1
           fi
 
-          sed -i "s/val brivo_sdk_version = \".*\"/val brivo_sdk_version = \"${version_input}\"/" "$file_path"
+          sed -i 's/\(val brivoSdkVersion by extra ("\)[^"]*\(")\)/\1'"$version_input"'\2/' build.gradle.kts
 
       - name: Grant execute permission to Gradle wrapper
         run: chmod +x ./gradlew
