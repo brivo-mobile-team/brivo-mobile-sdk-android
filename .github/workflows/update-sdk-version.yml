@@ -54,12 +54,21 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-          git checkout -b "$BRANCH_NAME"
-
-          git add app-public/build.gradle.kts
+          CURRENT_BRANCH=$(git branch --show-current)
+          if [[ "$CURRENT_BRANCH" == "main" ]]; then
+            echo "On main branch. Creating new release branch: $BRANCH_NAME"
+            git checkout -b "$BRANCH_NAME"
+            PUSH_BRANCH="$BRANCH_NAME"
+          else
+            echo "Not on main branch. Current branch is: $CURRENT_BRANCH"
+            echo "Committing to current branch instead of creating new branch."
+            PUSH_BRANCH="$CURRENT_BRANCH"
+          fi
+          
+          git add build.gradle.kts
           git commit -m "Update brivo_sdk_version to ${{ github.event.inputs.new_version }}" || echo "No changes to commit"
           
-          git push origin "$BRANCH_NAME"
+          git push origin "$PUSH_BRANCH"
       
       - name: Create Pull Request
         env:
