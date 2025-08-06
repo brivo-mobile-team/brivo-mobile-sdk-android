@@ -7,11 +7,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.fragment.app.FragmentActivity
 import com.brivo.app_sdk_public.navigation.MainNavigation
 import com.brivo.app_sdk_public.ui.theme.AppTheme
-import androidx.fragment.app.FragmentActivity
-import com.brivo.app_sdk_public.domain.permissions.BluetoothPermissionRequest
-import com.brivo.app_sdk_public.domain.permissions.LocationPermissionRequest
+import com.brivo.common_app.domain.permissions.BluetoothPermissionRequest
+import com.brivo.common_app.domain.permissions.LocationPermissionRequest
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

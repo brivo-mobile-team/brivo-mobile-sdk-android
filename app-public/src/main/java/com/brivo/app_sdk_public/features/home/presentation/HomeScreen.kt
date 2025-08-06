@@ -1,23 +1,14 @@
 package com.brivo.app_sdk_public.features.home.presentation
 
+import AlertMessageDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -30,24 +21,20 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import com.brivo.app_sdk_public.R
-import com.brivo.app_sdk_public.TestTags
-import com.brivo.app_sdk_public.features.home.model.BrivoOnairPassUIModel
-import com.brivo.app_sdk_public.features.home.model.BrivoSiteUIModel
 import com.brivo.app_sdk_public.features.home.model.HomeUIEvent
 import com.brivo.app_sdk_public.ui.theme.AppTheme
-import com.brivo.app_sdk_public.view.AlertMessageDialog
-import com.brivo.app_sdk_public.view.ComposableLifecycle
 import com.brivo.app_sdk_public.view.ThemedPreview
+import com.brivo.common_app.features.home.model.BrivoOnairPassUIModel
+import com.brivo.common_app.features.home.model.BrivoSiteUIModel
+import com.brivo.common_app.features.home.presentation.PassesList
+import com.brivo.common_app.view.ComposableLifecycle
 
 @Composable
 fun HomeScreen(
@@ -128,133 +115,15 @@ fun HomeScreenContent(
                     loading = state.loading,
                     refreshing = state.refreshing,
                     onSitePressed = onSitePressed,
-                    onEvent = onEvent
+                    onRefresh = {
+                        onEvent(HomeUIEvent.RefreshPasses)
+                    }
                 )
             }
         }
     )
 }
 
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun PassesList(
-    loading: Boolean,
-    refreshing: Boolean,
-    passes: List<BrivoOnairPassUIModel>,
-    onSitePressed: (String, String)  -> Unit,
-    onEvent: (HomeUIEvent) -> Unit
-) {
-
-    if (passes.isEmpty() && !loading) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(32.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                textAlign = TextAlign.Center,
-                text = stringResource(id = R.string.home_sites_empty)
-            )
-        }
-    } else {
-
-        val pullToRefreshState = rememberPullRefreshState(
-            refreshing = refreshing,
-            onRefresh = { onEvent(HomeUIEvent.RefreshPasses) }
-        )
-
-        Box(
-            contentAlignment = Alignment.BottomCenter,
-            modifier = Modifier
-                .clipToBounds()
-                .pullRefresh(pullToRefreshState)
-        ) {
-            LazyColumn(
-                Modifier.testTag(TestTags.PASSES_LIST)
-            ) {
-                itemsIndexed(passes) { _, pass ->
-                    MobilePassHeader(pass = pass)
-                    MobilePassChild(
-                        pass = pass,
-                        onSitePressed = onSitePressed,
-                        Modifier.testTag(TestTags.PASSES_LIST_ITEM)
-                    )
-                }
-            }
-            PullRefreshIndicator(
-                refreshing = refreshing,
-                state = pullToRefreshState,
-                modifier = Modifier.align(Alignment.TopCenter)
-            )
-        }
-    }
-}
-
-@Composable
-fun MobilePassHeader(
-    pass: BrivoOnairPassUIModel
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.secondary)
-            .padding(8.dp)
-    ) {
-        Text(
-            fontSize = 12.sp,
-            text = stringResource(id = R.string.home_pass_id, pass.passId),
-            color = MaterialTheme.colorScheme.onSecondary,
-            softWrap = false
-        )
-        Text(
-            fontSize = 12.sp,
-            text = stringResource(id = R.string.home_pass_account_id, pass.accountId),
-            color = MaterialTheme.colorScheme.onSecondary
-        )
-        Text(
-            fontSize = 12.sp,
-            text = stringResource(id = R.string.home_pass_account_name, pass.accountName),
-            color = MaterialTheme.colorScheme.onSecondary
-        )
-        Text(
-            fontSize = 12.sp,
-            text = stringResource(id = R.string.home_pass_user_name, pass.firstName, pass.lastName),
-            color = MaterialTheme.colorScheme.onSecondary
-        )
-    }
-}
-
-@Composable
-fun MobilePassChild(
-    pass: BrivoOnairPassUIModel,
-    onSitePressed: (String, String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    if (pass.sites.isEmpty()) {
-        Text(
-            modifier = Modifier.padding(16.dp),
-            text = stringResource(id = R.string.home_pass_no_sites)
-        )
-    } else {
-        pass.sites.forEach { site ->
-            Row(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .clickable { onSitePressed(pass.passId, site.id) }
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(site.siteName)
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = site.siteName
-                )
-            }
-        }
-    }
-}
 
 @ThemedPreview
 @Composable

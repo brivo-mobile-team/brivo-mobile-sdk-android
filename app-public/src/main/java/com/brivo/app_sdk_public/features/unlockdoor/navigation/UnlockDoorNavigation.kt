@@ -7,8 +7,8 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.brivo.app_sdk_public.features.unlockdoor.presentation.UnlockDoorScreen
-import com.brivo.app_sdk_public.navigation.Destinations
+import com.brivo.app_sdk_public.features.unlockdoor.UnlockDoorScreen
+import com.brivo.common_app.navigation.Destinations
 
 const val PassIdArg = "passIdArg"
 const val AccessPointIdArg = "accessPointIdArg"
@@ -39,7 +39,8 @@ fun NavController.navigateUnlockDoorScreen(
 }
 
 fun NavGraphBuilder.unlockDoorScreen(
-    onBackPressed: () -> Unit
+    onBackPressed: () -> Unit,
+    onCheckPermissions: suspend (hasTrustedNetwork: Boolean) -> Boolean
 ) {
     composable(
         route = "${Destinations.UnlockDoor.route}/{$PassIdArg}/{$AccessPointIdArg}/{$AccessPointNameArg}/{$HasTrustedNetwork}",
@@ -51,7 +52,8 @@ fun NavGraphBuilder.unlockDoorScreen(
         )
     ) {
         UnlockDoorScreen(
-            onBackPressed = onBackPressed
+            onBackPressed = onBackPressed,
+            onCheckPermissions = onCheckPermissions
         )
     }
 }
@@ -61,13 +63,15 @@ fun NavController.navigateUnlockDoorMagicButtonScreen() {
 }
 
 fun NavGraphBuilder.unlockDoorMagicButtonScreen(
-    onBackPressed: () -> Unit
+    onBackPressed: () -> Unit,
+    onCheckPermissions: suspend (hasTrustedNetwork: Boolean) -> Boolean
 ) {
     composable(
         route = Destinations.UnlockDoor.route,
     ) {
         UnlockDoorScreen(
-            onBackPressed = onBackPressed
+            onBackPressed = onBackPressed,
+            onCheckPermissions = onCheckPermissions
         )
     }
 }

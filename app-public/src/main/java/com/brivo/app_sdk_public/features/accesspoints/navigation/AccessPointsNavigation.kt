@@ -7,8 +7,8 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.brivo.app_sdk_public.features.accesspoints.presentation.AccessPointsScreen
-import com.brivo.app_sdk_public.navigation.Destinations
+import com.brivo.app_sdk_public.features.accesspoints.AccessPointsScreen
+import com.brivo.common_app.navigation.Destinations
 
 const val PassIdArg = "passIdArg"
 const val SiteIdArg = "siteIdArg"
