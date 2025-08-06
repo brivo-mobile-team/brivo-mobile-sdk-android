@@ -33,6 +33,8 @@ jobs:
           fi
 
           sed -i 's/\(val brivoSdkVersion by extra ("\)[^"]*\(")\)/\1'"$version_input"'\2/' $file_path
+          
+          sed 's/\(val brivoSdkVersion by extra ("\)[^"]*\(")\)/\1'"$version_input"'\2/' $file_path
 
           cat build.gradle.kts
 
