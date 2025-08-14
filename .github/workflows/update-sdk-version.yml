@@ -32,7 +32,9 @@ jobs:
               exit 1
           fi
 
-          sed -i 's/\(val brivoSdkVersion by extra ("\)[^"]*\(")\)/\1'"$version_input"'\2/' build.gradle.kts
+          sed -i 's/\(val brivoSdkVersion by extra("\)[^"]*\(")\)/\1'"$version_input"'\2/' $file_path
+
+          cat build.gradle.kts
 
       - name: Grant execute permission to Gradle wrapper
         run: chmod +x ./gradlew

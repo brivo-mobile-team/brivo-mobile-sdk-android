@@ -1,0 +1,54 @@
+<resources>
+    <string name="app_name">BrivoSDK</string>
+    <string name="sdk_version">BrivoSDK %1$s</string>
+    <string name="alert_dialog_button_ok">OK</string>
+    <string name="alert_dialog_button_cancel">Cancel</string>
+    <string name="redeem_pass">Redeem a Mobile Pass</string>
+    <string name="redeem_pass_region">Toggle on for US, off for EU</string>
+    <string name="redeem_pass_email">Email</string>
+    <string name="redeem_pass_access_code">Token</string>
+    <string name="redeem_pass_submit">Submit</string>
+    <string name="redeem_pass_success">Mobile Pass Successfully Redeemed</string>
+    <string name="home_sites_empty">You have no Mobile Passes. Add passes by tapping the + button.</string>
+    <string name="home_magic_button">Magic Button</string>
+    <string name="home_pass_id">Pass Id: %1$s</string>
+    <string name="home_pass_account_id">Account Id: %1$s</string>
+    <string name="home_pass_account_name">Account Name: %1$s</string>
+    <string name="home_pass_user_name">User: %1$s %2$s</string>
+    <string name="home_pass_no_sites">This Mobile Pass has no sites</string>
+    <string name="access_points">Access Points for %1$s</string>
+    <string name="access_point_door_type">Door Type</string>
+    <string name="access_points_empty">There are no Access Points for this site.</string>
+    <string name="unlock_door_title">Unlock %1$s</string>
+    <string name="unlock_door_with_magic_button_title">Unlock with Magic Button</string>
+    <string name="unlock_door_button">Unlock Door</string>
+    <string name="unlock_door_success">Unlock Door Success</string>
+    <string name="unlock_door_failed">Unlock Door Failed</string>
+    <string name="unlock_door_two_factor_dialog_title">2FA Required</string>
+    <string name="unlock_door_two_factor_dialog_message">Please authenticate with your device biometrics before unlocking the door</string>
+    <string name="unlock_door_two_factor_dialog_cancel">Cancel</string>
+    <string name="location_permission_dialog_title">Location Permission Required</string>
+    <string name="location_permission_dialog_message">Please enable Location permissions to work all the time in order to open doors for widgets.</string>
+    <string name="bluetooth_permission_dialog_title">Bluetooth Permission Required</string>
+    <string name="bluetooth_permission_dialog_message">Please enable Bluetooth permissions in order to scan for BLE devices.</string>
+    <string name="ble_error_please_enable_ble_to_continue">Please enable bluetooth to continue</string>
+    <string name="ble_error_location_permission_denied">Location permission denied</string>
+    <string name="ble_error_door_unlocking">Door Unlocking</string>
+    <string name="ble_error_door_unlocked">Door Unlocked</string>
+    <string name="ble_error_licence_failed">Licence failed</string>
+    <string name="ble_error_door_unlocked_failed">Door Unlocked Failed</string>
+    <string name="ble_error_failed_to_unlock_door">Failed to unlock door</string>
+    <string name="ble_error_failed_to_unlock_door_timeout">Unlock request timed out</string>
+    <string name="passes_list">Passes list</string>
+
+    <string name="widget_background_location_permission_request_message">Brivo Mobile Pass uses background location data to identify when your device is within proximity to available
+        Brivo readers, so you can unlock doors using bluetooth. Brivo does not store location information or transmit any location information to third parties.
+        You may opt-out to the use of background location at any time in your device settings.</string>
+    <string name="widget_background_location_permission_request_title">Please enable background location</string>
+    <string name="precise_location_permisison_request_message">To unlock some of the doors, we require precise location to be enabled.</string>
+    <string name="precise_location_permission_request_title">Please enable location permission</string>
+    <string name="bluetooth_nearby_permission_required_to_open_ble_doors">Brivo Mobile Pass requires Nearby Devices access to be able to open Bluetooth doors.</string>
+    <string name="bluetooth_permission_required_to_open_ble_doors">Brivo Mobile Pass requires Bluetooth access to be able to open Bluetooth doors.</string>
+    <string name="bluetooth_permission_required">Bluetooth permission required</string>
+    <string name="bluetooth_nearby_permission_required">Nearby devices permission required</string>
+</resources>

@@ -3,8 +3,9 @@ package com.brivo.app_sdk_public.core.repository
 import android.annotation.SuppressLint
 import androidx.fragment.app.FragmentActivity
 import com.brivo.app_sdk_public.App
-import com.brivo.app_sdk_public.BrivoSampleConstants
-import com.brivo.app_sdk_public.core.model.DomainState
+import com.brivo.common_app.model.DomainState
+import com.brivo.common_app.repository.BrivoMobileSDKRepository
+import com.brivo.common_app.repository.WalletEligibilityStatus
 import com.brivo.sdk.BrivoSDK
 import com.brivo.sdk.BrivoSDKInitializationException
 import com.brivo.sdk.access.BrivoSDKAccess
@@ -24,15 +25,13 @@ import javax.inject.Inject
 class BrivoMobileSDKRepositoryImpl @Inject constructor(
 ) : BrivoMobileSDKRepository {
 
-    override fun init(serverRegion: ServerRegion): DomainState<Unit> {
-        val (clientId, clientSecret) = when (serverRegion) {
-            ServerRegion.UNITED_STATES -> BrivoSampleConstants.CLIENT_ID to BrivoSampleConstants.CLIENT_SECRET
-            ServerRegion.EUROPE -> BrivoSampleConstants.CLIENT_ID_EU to BrivoSampleConstants.CLIENT_SECRET_EU
-        }
-        val (authUrl, apiUrl) = when (serverRegion) {
-            ServerRegion.UNITED_STATES -> BrivoSampleConstants.AUTH_URL to BrivoSampleConstants.API_URL
-            ServerRegion.EUROPE -> BrivoSampleConstants.AUTH_URL_EU to BrivoSampleConstants.API_URL_EU
-        }
+    override fun init(
+        serverRegion: ServerRegion,
+        clientId: String,
+        clientSecret: String,
+        authUrl: String,
+        apiUrl: String
+    ): DomainState<Unit> {
         try {
             BrivoSDK.init(
                 context = App.instance.applicationContext,
@@ -55,6 +54,17 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
         }
 
         return DomainState.Success(Unit)
+    }
+
+    override suspend fun refreshOrigoCredentials(pass: BrivoOnairPass): DomainState<Unit> {
+        error("Not implemented/Not used")
+    }
+
+    override suspend fun getWalletEligibilityStatus(
+        tokens: BrivoTokens,
+        forced: Boolean
+    ): BrivoSDKApiState<WalletEligibilityStatus> {
+        error("Not implemented/Not used")
     }
 
     override suspend fun refreshAllegionCredentials(): DomainState<Unit> {
