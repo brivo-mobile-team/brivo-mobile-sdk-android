@@ -7,13 +7,18 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.brivo.app_sdk_public.features.unlockdoor.navigation.UnlockDoorArgs
+import com.brivo.common_app.domain.usecases.GetAccessPointDetailsUseCase
+import com.brivo.common_app.features.unlockdoor.model.DoorDetailsBottomSheetUIModel
 import com.brivo.common_app.features.unlockdoor.model.DoorState
 import com.brivo.common_app.features.unlockdoor.model.UnlockDoorUIEvent
 import com.brivo.common_app.features.unlockdoor.usecase.InitializeBrivoSDKLocalAuthUseCase
 import com.brivo.common_app.features.unlockdoor.usecase.UnlockDoorUseCase
 import com.brivo.common_app.features.unlockdoor.usecase.UnlockNearestBLEAccessPointUseCase
+import com.brivo.common_app.model.DomainState
 import com.brivo.sdk.enums.AccessPointCommunicationState
+import com.brivo.sdk.enums.DoorType
 import com.brivo.sdk.model.BrivoResult
+import com.brivo.sdk.onair.model.BrivoBluetoothReader
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +32,8 @@ class UnlockDoorViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val initializeBrivoSDKLocalAuthUseCase: InitializeBrivoSDKLocalAuthUseCase,
     private val unlockNearestBLEAccessPointUseCase: UnlockNearestBLEAccessPointUseCase,
-    private val unlockDoorUseCase: UnlockDoorUseCase
+    private val unlockDoorUseCase: UnlockDoorUseCase,
+    private val getAccessPointDetailsUseCase: GetAccessPointDetailsUseCase
 ) : ViewModel() {
 
     private val unlockDoorArgs: UnlockDoorArgs = UnlockDoorArgs(
@@ -37,6 +43,9 @@ class UnlockDoorViewModel @Inject constructor(
     private val _state = MutableStateFlow(
         UnlockDoorViewState(
             accessPointName = unlockDoorArgs.accessPointName,
+            accessPointType = DoorType.valueOf(unlockDoorArgs.accessPointType.ifEmpty {
+                DoorType.UNKNOWN.name
+            }),
             isMagicButton = unlockDoorArgs.passId == "",
             hasTrustedNetwork = unlockDoorArgs.hasTrustedNetwork
         )
@@ -45,7 +54,14 @@ class UnlockDoorViewModel @Inject constructor(
 
     private var cancellationSignal = CancellationSignal()
 
+    init {
+        viewModelScope.launch {
+            updateDoorDetailsBootmSheet()
+        }
+    }
+
     fun onEvent(event: UnlockDoorUIEvent) {
+
         when (event) {
             is UnlockDoorUIEvent.InitLocalAuth -> {
                 initBrivoSDKLocalAuth(
@@ -81,6 +97,42 @@ class UnlockDoorViewModel @Inject constructor(
             is UnlockDoorUIEvent.UpdateAlertMessage -> {
                 updateAlertMessage(alertMessage = event.message)
             }
+
+            is UnlockDoorUIEvent.DismissDormakabaTooltip -> {
+                dismissDormakabaUnlockTooltip()
+            }
+        }
+    }
+
+    private suspend fun updateDoorDetailsBootmSheet() {
+        when (val result = getAccessPointDetailsUseCase.execute(unlockDoorArgs.accessPointId)) {
+            is DomainState.Failed -> {
+                updateAlertMessage(result.error)
+            }
+            is DomainState.Success -> {
+                val accessPoint = result.data
+                _state.update {
+                    it.copy(
+                        doorDetailsBottomSheetUIModel = DoorDetailsBottomSheetUIModel(
+                            siteId = accessPoint.id,
+                            siteName = accessPoint.siteName,
+                            doorType = accessPoint.doorType,
+                            bluetoothReader = accessPoint.bluetoothReader,
+                            controlLockSerialNumber = accessPoint.controlLockSerialNumber,
+                            isTwoFactorEnabled = accessPoint.isTwoFactorEnabled,
+                            dormakabaMobilePassEnabled = false
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    fun updateShouldShowBottomSheet(newValue: Boolean) {
+        _state.update {
+            it.copy(
+                showBottomSheet = newValue
+            )
         }
     }
 
@@ -115,6 +167,7 @@ class UnlockDoorViewModel @Inject constructor(
 
     private fun unlockDoor(activity: FragmentActivity) {
         viewModelScope.launch {
+            checkShowDormakabaUnlockTooltip(doorType = _state.value.accessPointType)
             updateDoorState(DoorState.UNLOCKING)
             unlockDoorUseCase.execute(
                 passId = unlockDoorArgs.passId,
@@ -204,6 +257,28 @@ class UnlockDoorViewModel @Inject constructor(
             }
         }
     }
+
+    private fun checkShowDormakabaUnlockTooltip(doorType: DoorType) {
+//        if (doorType == DoorType.DORMAKABA) { // todo uncomment if dormakaba is supported on public SDK
+//            viewModelScope.launch {
+//                _state.update {
+//                    it.copy(
+//                        showDormakabaUnlockTooltip = true
+//                    )
+//                }
+//            }
+//        }
+    }
+
+    private fun dismissDormakabaUnlockTooltip() {
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    showDormakabaUnlockTooltip = false
+                )
+            }
+        }
+    }
 }
 
 data class UnlockDoorViewState(
@@ -211,6 +286,18 @@ data class UnlockDoorViewState(
     val showSnackbar: Boolean = false,
     val doorState: DoorState = DoorState.LOCKED,
     val accessPointName: String = "",
+    val accessPointType: DoorType = DoorType.UNKNOWN,
     val alertMessage: String = "",
-    val hasTrustedNetwork: Boolean = false
+    val hasTrustedNetwork: Boolean = false,
+    val showDormakabaUnlockTooltip: Boolean = false,
+    val showBottomSheet: Boolean = false,
+    val doorDetailsBottomSheetUIModel: DoorDetailsBottomSheetUIModel = DoorDetailsBottomSheetUIModel(
+        siteId = "",
+        siteName = "",
+        doorType = DoorType.UNKNOWN,
+        isTwoFactorEnabled = false,
+        bluetoothReader = BrivoBluetoothReader(),
+        controlLockSerialNumber = "",
+        dormakabaMobilePassEnabled = false
+    )
 )

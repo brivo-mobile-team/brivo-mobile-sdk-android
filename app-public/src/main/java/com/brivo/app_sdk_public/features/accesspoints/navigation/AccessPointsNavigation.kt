@@ -25,7 +25,7 @@ fun NavController.navigateAccessPointsScreen(passId: String, siteId: String) {
 }
 
 fun NavGraphBuilder.accessPointsScreen(
-    onAccessPointPressed: (String, String, String, Boolean) -> Unit
+    onAccessPointPressed: (String, String, String, String, String, Boolean) -> Unit
 ) {
     composable(
         route = "${Destinations.AccessPoints.route}/{$PassIdArg}/{$SiteIdArg}",

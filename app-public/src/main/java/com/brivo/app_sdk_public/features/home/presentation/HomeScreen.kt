@@ -117,6 +117,28 @@ fun HomeScreenContent(
                     onSitePressed = onSitePressed,
                     onRefresh = {
                         onEvent(HomeUIEvent.RefreshPasses)
+                    },
+                    shouldShowBottomSheet = state.passDetailsBottomSheetUIModel.shouldShowBottomSheet,
+                    passDetailsBottomSheetUIModel = state.passDetailsBottomSheetUIModel,
+                    onInfoButtonClicked = {
+                        onEvent(
+                            HomeUIEvent.ShouldShowBotomSheet(
+                                shouldShow = true
+                            )
+                        )
+                    },
+                    onUpdateBottomSheetInformation = { hasAllegionBleCredentials, hasHidOrigoMobilePass, hidOrigoWalletPassEnabled, hasBrivoWalletPass ->
+                        onEvent(
+                            HomeUIEvent.UpdateBottomSheetInformation(
+                                hasAllegionBleCredentials = hasAllegionBleCredentials,
+                                hasHidOrigoMobilePass = hasHidOrigoMobilePass,
+                                hidOrigoWalletPassEnabled = hidOrigoWalletPassEnabled,
+                                hasBrivoWalletPass = hasBrivoWalletPass
+                            )
+                        )
+                    },
+                    onDismissBottomSheet = {
+                        onEvent(HomeUIEvent.ShouldShowBotomSheet(shouldShow = false))
                     }
                 )
             }
@@ -148,7 +170,11 @@ fun HomePreview() {
                 BrivoSiteUIModel(id = "6", siteName = "Site 7"),
                 BrivoSiteUIModel(id = "7", siteName = "Site 8"),
                 BrivoSiteUIModel(id = "8", siteName = "Site 9"),
-            )
+            ),
+            hasAllegionBleCredentials = false,
+            hasHidOrigoMobilePass = false,
+            hidOrigoWalletPassEnabled = false,
+            hasBrivoWalletPass = false
         ),
         BrivoOnairPassUIModel(
             passId = "passId2",
@@ -158,7 +184,11 @@ fun HomePreview() {
             lastName = "lastName",
             accessToken = "accessToken",
             refreshToken = "refreshToken",
-            sites = emptyList()
+            sites = emptyList(),
+            hasAllegionBleCredentials = false,
+            hasHidOrigoMobilePass = false,
+            hidOrigoWalletPassEnabled = false,
+            hasBrivoWalletPass = false
         )
     )
 

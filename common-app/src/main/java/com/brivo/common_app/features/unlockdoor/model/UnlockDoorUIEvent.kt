@@ -9,6 +9,8 @@ sealed class UnlockDoorUIEvent {
 
     data object CancelDoorUnlock : UnlockDoorUIEvent()
 
+    data object DismissDormakabaTooltip : UnlockDoorUIEvent()
+
     data class UnlockDoor(val activity: FragmentActivity) : UnlockDoorUIEvent()
 
     data class UpdateAlertMessage(val message: String) : UnlockDoorUIEvent()

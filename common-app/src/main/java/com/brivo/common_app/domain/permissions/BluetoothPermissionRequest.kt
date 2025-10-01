@@ -23,7 +23,8 @@ class BluetoothPermissionRequest(private val activity: FragmentActivity) {
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
                     arrayOf(
                         Manifest.permission.BLUETOOTH_SCAN,
-                        Manifest.permission.BLUETOOTH_CONNECT
+                        Manifest.permission.BLUETOOTH_CONNECT,
+                        Manifest.permission.BLUETOOTH_ADVERTISE
                     )
                 }
 
@@ -109,7 +110,7 @@ class BluetoothPermissionRequest(private val activity: FragmentActivity) {
                     return false
                 }
                 return true
-        }
+            }
         }
     }
 
