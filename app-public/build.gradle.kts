@@ -77,6 +77,7 @@ android {
 
     packaging {
         jniLibs.pickFirsts.add("/**/libbrivoonair-lib.so")
+        jniLibs.pickFirsts.add("/**/libBrivoOnair.so")
     }
 
 }
@@ -103,10 +104,9 @@ dependencies {
 
     implementation(project(":common-app"))
 
-
 //    implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivo-hidorigo:$brivo_sdk_version")
-//    debugImplementation (files("../brivo-hidorigo/lib/origo-sdk-debug-3.4.0.aar"))
-//    releaseImplementation (files("../brivo-hidorigo/lib/origo-sdk-release-3.4.0.aar"))
+//    debugImplementation (files("../brivo-hidorigo/lib/origo-sdk-debug-3.6.0.aar"))
+//    releaseImplementation (files("../brivo-hidorigo/lib/origo-sdk-release-3.6.0.aar"))
 
     implementation(platform("androidx.compose:compose-bom:2025.06.01"))
     implementation("com.karumi:dexter:6.2.3")

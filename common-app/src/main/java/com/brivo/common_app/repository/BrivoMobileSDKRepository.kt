@@ -5,6 +5,7 @@ import com.brivo.common_app.model.DomainState
 import com.brivo.sdk.enums.ServerRegion
 import com.brivo.sdk.model.BrivoResult
 import com.brivo.sdk.model.BrivoSDKApiState
+import com.brivo.sdk.onair.model.BrivoAuthenticateResponse
 import com.brivo.sdk.onair.model.BrivoOnairPass
 import com.brivo.sdk.onair.model.BrivoTokens
 import kotlinx.coroutines.flow.Flow
@@ -16,8 +17,8 @@ interface BrivoMobileSDKRepository {
         clientId: String,
         clientSecret: String,
         authUrl: String,
-        apiUrl: String
-    ): DomainState<Unit>
+        apiUrl: String,
+        ): DomainState<Unit>
 
     fun initLocalAuth(
         title: String,
@@ -37,9 +38,16 @@ interface BrivoMobileSDKRepository {
         accessToken: String?
     ): DomainState<BrivoOnairPass?>
 
+    suspend fun refreshAccessTokenWithToken(
+        accessToken: String,
+        refreshToken: String
+    ): DomainState<BrivoAuthenticateResponse>
+
     suspend fun refreshAllegionCredentials(): DomainState<Unit>
 
     suspend fun refreshOrigoCredentials(pass: BrivoOnairPass): DomainState<Unit>
+
+    suspend fun refreshDormakabaCredentials(passes: List<BrivoOnairPass>): DomainState<Unit>
 
     fun unlockAccessPoint(
         passId: String,
@@ -55,5 +63,6 @@ interface BrivoMobileSDKRepository {
         tokens: BrivoTokens,
         forced: Boolean
     ): BrivoSDKApiState<WalletEligibilityStatus>
-
 }
+
+

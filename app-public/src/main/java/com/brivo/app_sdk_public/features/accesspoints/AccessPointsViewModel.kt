@@ -7,6 +7,7 @@ import com.brivo.app_sdk_public.features.accesspoints.navigation.AccessPointsArg
 import com.brivo.common_app.domain.usecases.GetBrivoSDKLocallyStoredPassesUseCase
 import com.brivo.common_app.features.accesspoints.model.AccessPointsUIEvent
 import com.brivo.common_app.features.accesspoints.model.AccessPointsViewState
+import com.brivo.common_app.features.accesspoints.model.SiteDetailsBottomSheetUIModel
 import com.brivo.common_app.features.accesspoints.model.toAccessPointUIModel
 import com.brivo.common_app.model.DomainState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,6 +40,14 @@ class AccessPointsViewModel @Inject constructor(
             is AccessPointsUIEvent.UpdateAlertMessage -> {
                 updateAlertMessage(alertMessage = event.message)
             }
+
+            is AccessPointsUIEvent.ShouldShowBottomSheet -> {
+                _state.update {
+                    it.copy(
+                        shouldShowBottomSheet = event.shouldShow
+                    )
+                }
+            }
         }
     }
 
@@ -59,12 +68,23 @@ class AccessPointsViewModel @Inject constructor(
                         val site = pass.sites.first { site ->
                             site.id == accessPointArgs.siteId
                         }
+
+                        val siteDetailsBottomSheetUIModel = SiteDetailsBottomSheetUIModel(
+                            siteId = site.id,
+                            siteName = site.siteName,
+                            hasTrustedNetwork = site.hasTrustedNetwork,
+                            preScreening = site.preScreening,
+                            timeZone = site.timeZone
+                        )
+
                         _state.update {
                             it.copy(
                                 accessPoints = site.accessPoints.map { accessPoint -> accessPoint.toAccessPointUIModel() },
                                 siteName = site.siteName,
+                                siteId = site.id,
                                 selectedSiteHasTrustedNetwork = site.hasTrustedNetwork,
-                                loading = false
+                                loading = false,
+                                siteDetailsBottomSheetUIModel = siteDetailsBottomSheetUIModel
                             )
                         }
                     }

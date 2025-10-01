@@ -9,16 +9,16 @@ import com.brivo.common_app.features.accesspoints.presentation.AccessPointsConte
 @Composable
 fun AccessPointsScreen(
     viewModel: AccessPointsViewModel = hiltViewModel(),
-    onAccessPointPressed: (String, String, String, Boolean) -> Unit
+    onAccessPointPressed: (String, String, String, String, String, Boolean) -> Unit
 ) {
 
     val state by viewModel.state.collectAsState()
 
     AccessPointsContent(
-        onAccessPointPressed = { accessPointId, accessPointName ->
-            onAccessPointPressed(state.passId, accessPointId, accessPointName, state.selectedSiteHasTrustedNetwork)
+        state = state,
+        onAccessPointPressed = { accessPointId, accessPointName, accessPointType ->
+            onAccessPointPressed(state.passId, accessPointId, state.siteId,accessPointName, accessPointType, state.selectedSiteHasTrustedNetwork)
         },
         onEvent = viewModel::onEvent,
-        state = state
     )
 }

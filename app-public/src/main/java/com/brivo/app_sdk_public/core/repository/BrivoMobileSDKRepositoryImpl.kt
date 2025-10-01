@@ -15,6 +15,7 @@ import com.brivo.sdk.localauthentication.BrivoSDKLocalAuthentication
 import com.brivo.sdk.model.BrivoConfiguration
 import com.brivo.sdk.model.BrivoResult
 import com.brivo.sdk.model.BrivoSDKApiState
+import com.brivo.sdk.onair.model.BrivoAuthenticateResponse
 import com.brivo.sdk.onair.model.BrivoOnairPass
 import com.brivo.sdk.onair.model.BrivoTokens
 import com.brivo.sdk.onair.repository.BrivoSDKOnair
@@ -30,7 +31,7 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
         clientId: String,
         clientSecret: String,
         authUrl: String,
-        apiUrl: String
+        apiUrl: String,
     ): DomainState<Unit> {
         try {
             BrivoSDK.init(
@@ -57,6 +58,10 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
     }
 
     override suspend fun refreshOrigoCredentials(pass: BrivoOnairPass): DomainState<Unit> {
+        error("Not implemented/Not used")
+    }
+
+    override suspend fun refreshDormakabaCredentials(passes: List<BrivoOnairPass>): DomainState<Unit> {
         error("Not implemented/Not used")
     }
 
@@ -175,6 +180,23 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
             }
         }
 
+    }
+
+    override suspend fun refreshAccessTokenWithToken(
+        accessToken: String,
+        refreshToken: String
+    ): DomainState<BrivoAuthenticateResponse> {
+        return when (val refreshResult = BrivoSDKOnair.instance.refreshAccessTokenWithToken(accessToken, refreshToken)){
+            is BrivoSDKApiState.Failed -> {
+                DomainState.Failed(
+                    error = refreshResult.brivoError.message ?: "Failed to refresh pass",
+                    errorCode = refreshResult.brivoError.code
+                )
+            }
+            is BrivoSDKApiState.Success -> {
+                DomainState.Success(refreshResult.data)
+            }
+        }
     }
 
     override fun unlockAccessPoint(

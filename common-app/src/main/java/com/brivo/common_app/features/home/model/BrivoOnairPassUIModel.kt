@@ -10,7 +10,11 @@ data class BrivoOnairPassUIModel(
     val lastName: String,
     val accessToken: String?,
     val refreshToken: String,
-    val sites: List<BrivoSiteUIModel> = emptyList()
+    val sites: List<BrivoSiteUIModel> = emptyList(),
+    val hasAllegionBleCredentials: Boolean,
+    val hasHidOrigoMobilePass: Boolean,
+    val hidOrigoWalletPassEnabled: Boolean,
+    val hasBrivoWalletPass: Boolean,
 )
 
 fun BrivoOnairPass.toBrivoOnairPassUIModel() =
@@ -22,5 +26,9 @@ fun BrivoOnairPass.toBrivoOnairPassUIModel() =
         lastName = this.lastName,
         accessToken = this.brivoOnairPassCredentials.tokens.accessToken,
         refreshToken = this.brivoOnairPassCredentials.tokens.refreshToken ?: "",
-        sites = this.sites.map { site -> site.toBrivoSiteUIModel() }
+        sites = this.sites.map { site -> site.toBrivoSiteUIModel() },
+        hasAllegionBleCredentials = this.hasAllegionBleCredentials,
+        hasHidOrigoMobilePass = this.hasHidOrigoMobilePass,
+        hidOrigoWalletPassEnabled = this.hidOrigoWalletPassEnabled,
+        hasBrivoWalletPass = this.hasBrivoWalletPass
     )

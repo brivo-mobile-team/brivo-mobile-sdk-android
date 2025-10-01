@@ -12,19 +12,25 @@ import com.brivo.common_app.navigation.Destinations
 
 const val PassIdArg = "passIdArg"
 const val AccessPointIdArg = "accessPointIdArg"
+const val SiteIdArg = "siteIdArg"
 const val AccessPointNameArg = "accessPointNameArg"
+const val AccessPointTypeArg = "accessPointTypeArg"
 const val HasTrustedNetwork = "hasTrustedNetwork"
 
 class UnlockDoorArgs(
     val passId: String,
     val accessPointId: String,
+    val siteId: String,
     val accessPointName: String,
+    val accessPointType: String,
     val hasTrustedNetwork: Boolean = false
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         Uri.decode(checkNotNull(savedStateHandle[PassIdArg] ?: "").toString()),
         Uri.decode(checkNotNull(savedStateHandle[AccessPointIdArg] ?: "").toString()),
+        Uri.decode(checkNotNull(savedStateHandle[SiteIdArg] ?: 1).toString()),
         Uri.decode(checkNotNull(savedStateHandle[AccessPointNameArg] ?: "").toString()),
+        Uri.decode(checkNotNull(savedStateHandle[AccessPointTypeArg] ?: "").toString()),
         Uri.decode(savedStateHandle[HasTrustedNetwork] ?: "false").toBooleanStrictOrNull() ?: false
     )
 }
@@ -32,10 +38,12 @@ class UnlockDoorArgs(
 fun NavController.navigateUnlockDoorScreen(
     passId: String,
     accessPointId: String,
+    siteId: String,
     accessPointName: String,
+    accessPointType: String,
     hasTrustedNetwork: Boolean
 ) {
-    this.navigate("${Destinations.UnlockDoor.route}/$passId/$accessPointId/$accessPointName/$hasTrustedNetwork")
+    this.navigate("${Destinations.UnlockDoor.route}/$passId/$accessPointId/$siteId/$accessPointName/$accessPointType/$hasTrustedNetwork")
 }
 
 fun NavGraphBuilder.unlockDoorScreen(
@@ -43,11 +51,13 @@ fun NavGraphBuilder.unlockDoorScreen(
     onCheckPermissions: suspend (hasTrustedNetwork: Boolean) -> Boolean
 ) {
     composable(
-        route = "${Destinations.UnlockDoor.route}/{$PassIdArg}/{$AccessPointIdArg}/{$AccessPointNameArg}/{$HasTrustedNetwork}",
+        route = "${Destinations.UnlockDoor.route}/{$PassIdArg}/{$AccessPointIdArg}/{$SiteIdArg}/{$AccessPointNameArg}/{$AccessPointTypeArg}/{$HasTrustedNetwork}",
         arguments = listOf(
             navArgument(PassIdArg) { type = NavType.StringType },
             navArgument(AccessPointIdArg) { type = NavType.StringType },
+            navArgument(SiteIdArg) { type = NavType.IntType },
             navArgument(AccessPointNameArg) { type = NavType.StringType },
+            navArgument(AccessPointTypeArg) { type = NavType.StringType },
             navArgument(HasTrustedNetwork) { type = NavType.StringType }
         )
     ) {

@@ -9,6 +9,7 @@ import com.brivo.common_app.domain.usecases.GetBrivoSDKLocallyStoredPassesUseCas
 import com.brivo.common_app.domain.usecases.GetBrivoSDKVersionUseCase
 import com.brivo.common_app.domain.usecases.RefreshPassesUseCase
 import com.brivo.common_app.features.home.model.BrivoOnairPassUIModel
+import com.brivo.common_app.features.home.model.PassDetailsBottomSheetUIModel
 import com.brivo.common_app.features.home.model.toBrivoOnairPassUIModel
 import com.brivo.common_app.features.home.usecase.RefreshAllegionCredentialsUseCase
 import com.brivo.common_app.model.DomainState
@@ -46,6 +47,31 @@ class HomeViewModel @Inject constructor(
 
             is HomeUIEvent.UpdateAlertMessage -> {
                 updateAlertMessage(alertMessage = event.message)
+            }
+
+            is HomeUIEvent.ShouldShowBotomSheet -> {
+                _state.update {
+                    val passDetailsBottomSheetUIModel = PassDetailsBottomSheetUIModel(
+                        shouldShowBottomSheet = event.shouldShow
+                    )
+                    it.copy(
+                        passDetailsBottomSheetUIModel = passDetailsBottomSheetUIModel
+                    )
+                }
+            }
+
+            is HomeUIEvent.UpdateBottomSheetInformation -> {
+                _state.update {
+                    val passDetailsBottomSheetUIModel = PassDetailsBottomSheetUIModel(
+                        hasAllegionBleCredentials = event.hasAllegionBleCredentials,
+                        hasHidOrigoMobilePass = event.hasHidOrigoMobilePass,
+                        hidOrigoWalletPassEnabled = event.hidOrigoWalletPassEnabled,
+                        hasBrivoWalletPass = event.hasBrivoWalletPass
+                    )
+                    it.copy(
+                        passDetailsBottomSheetUIModel = passDetailsBottomSheetUIModel
+                    )
+                }
             }
         }
     }
@@ -175,6 +201,7 @@ class HomeViewModel @Inject constructor(
         val version: String = "",
         val alertMessage: String = "",
         val loading: Boolean = true,
-        val refreshing: Boolean = false
+        val refreshing: Boolean = false,
+        val passDetailsBottomSheetUIModel: PassDetailsBottomSheetUIModel = PassDetailsBottomSheetUIModel()
     )
 }
