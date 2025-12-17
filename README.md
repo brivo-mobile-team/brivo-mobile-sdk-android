@@ -47,7 +47,7 @@ dependencies {
     implementation 'org.bitbucket.brivoinc.mobile-sdk-android:brivosmarthome:Tag'
 
     // Allegion SDK Module
-    implementation("com.allegion:MobileAccessSDK:latest.release") //This is the Allegion SDK Dependency required if you're using BrivoBLE-Allegion. In order to fetch it, you're required to receive a github access token from allegion and add it to your gradle.properties file
+    implementation("com.allegion:MobileAccessSDK:5.0.1") //This is the Allegion SDK Dependency required if you're using BrivoBLE-Allegion. In order to fetch it, you're required to receive a github access token from allegion and add it to your gradle.properties file
 }
 ```
 
@@ -276,13 +276,23 @@ try {
                 // If shouldContinueUnlockOperation is null, this can be ignored
                 // it.shouldContinueListener?.onShouldContinue(true)
             }
-            AccessPointCommunicationState.SCANNING -> //scanning
-                AccessPointCommunicationState.AUTHENTICATE
-            -> //authenticating
-                AccessPointCommunicationState.CONNECTING
-            -> //connecting
-                AccessPointCommunicationState.COMMUNICATING
-            -> //communicating
+            AccessPointCommunicationState.SCANNING -> {
+                // Represresents the scanning state
+            }
+            AccessPointCommunicationState.AUTHENTICATE -> {
+                // Respresents the authenticating state when two factor authentication is required
+            }
+            AccessPointCommunicationState.CONNECTING -> {
+                // Respresents the connecting state
+            }
+            AccessPointCommunicationState.COMMUNICATING -> {
+                // Respresent the communicating state
+            }
+            AccessPointCommunicationState.SCANNING_COOLDOWN -> {
+                //scanning cooldown state, 
+                // This is triggered if there is an attempt to perform more than 5 scans in a 30 second window
+                
+            }
         }
     }
 } catch (e: BrivoSDKInitializationException) {
@@ -338,13 +348,22 @@ try {
                 // If shouldContinueUnlockOperation is null, this can be ignored
                 // it.shouldContinueListener?.onShouldContinue(true)
             }
-            AccessPointCommunicationState.SCANNING -> //scanning
-                AccessPointCommunicationState.AUTHENTICATE
-            -> //authenticating
-                AccessPointCommunicationState.CONNECTING
-            -> //connecting
-                AccessPointCommunicationState.COMMUNICATING
-            -> //communicating
+            AccessPointCommunicationState.SCANNING -> {
+                // Represresents the scanning state
+            }
+            AccessPointCommunicationState.AUTHENTICATE -> {
+                // Respresents the authenticating state when two factor authentication is required
+            }
+            AccessPointCommunicationState.CONNECTING -> {
+                // Respresents the connecting state
+            }
+            AccessPointCommunicationState.COMMUNICATING -> {
+                // Respresent the communicating state
+            }
+            AccessPointCommunicationState.SCANNING_COOLDOWN -> {
+                //scanning cooldown state, 
+                // This is triggered if there is an attempt to perform more than 5 scans in a 30 second window
+            }
         }
     }
 } catch (e: BrivoSDKInitializationException) {
@@ -388,13 +407,23 @@ try {
                 // If shouldContinueUnlockOperation is null, this can be ignored
                 // it.shouldContinueListener?.onShouldContinue(true)
             }
-            AccessPointCommunicationState.SCANNING -> //scanning
-                AccessPointCommunicationState.AUTHENTICATE
-            -> //authenticating
-                AccessPointCommunicationState.CONNECTING
-            -> //connecting
-                AccessPointCommunicationState.COMMUNICATING
-            -> //communicating
+            AccessPointCommunicationState.SCANNING -> {
+                // Represresents the scanning state
+            }
+            AccessPointCommunicationState.AUTHENTICATE -> {
+                // Respresents the authenticating state when two factor authentication is required
+            }
+            AccessPointCommunicationState.CONNECTING -> {
+                // Respresents the connecting state
+            }
+            AccessPointCommunicationState.COMMUNICATING -> {
+                // Respresent the communicating state
+            }
+            AccessPointCommunicationState.SCANNING_COOLDOWN -> {
+                //scanning cooldown state, 
+                // This is triggered if there is an attempt to perform more than 5 scans in a 30 second window
+
+            }
         }
     }
 } catch (e: BrivoSDKInitializationException) {
@@ -436,13 +465,23 @@ try {
                 // If shouldContinueUnlockOperation is null, this can be ignored
                 // it.shouldContinueListener?.onShouldContinue(true)
             }
-            AccessPointCommunicationState.SCANNING -> //scanning
-                AccessPointCommunicationState.AUTHENTICATE
-            -> //authenticating
-                AccessPointCommunicationState.CONNECTING
-            -> //connecting
-                AccessPointCommunicationState.COMMUNICATING
-            -> //communicating
+            AccessPointCommunicationState.SCANNING -> {
+                // Represresents the scanning state
+            }
+            AccessPointCommunicationState.AUTHENTICATE -> {
+                // Respresents the authenticating state when two factor authentication is required
+            }
+            AccessPointCommunicationState.CONNECTING -> {
+                // Respresents the connecting state
+            }
+            AccessPointCommunicationState.COMMUNICATING -> {
+                // Respresent the communicating state
+            }
+            AccessPointCommunicationState.SCANNING_COOLDOWN -> {
+                //scanning cooldown state, 
+                // This is triggered if there is an attempt to perform more than 5 scans in a 30 second window
+
+            }
         }
     } catch (e: BrivoSDKInitializationException) {
         // Handle BrivoSDK initialization exception
@@ -706,6 +745,8 @@ object BrivoOnairErrorCodes {
     const val ONAIR_TRUSTED_NETWORK_LOCATION_PERMISSION_NOT_GRANTED: Int = -3010
     const val ONAIR_RETRIEVE_BLE_SECURITY_TOKENS_FAILED: Int = -3011
     const val ONAIR_HID_ORIGO_INVITATION_CODE_ERROR: Int = -4000
+    const val ONAIR_HID_ORIGO_WALLET_INVITATION_CODE_ERROR: Int = -4001
+    const val ONAIR_HID_ORIGO_WALLET_UNLINK_ERROR: Int = -4002
 }
 ```
 
@@ -729,6 +770,21 @@ object BrivoBLEErrorCodes {
     const val BLE_BLUETOOTH_PERMISSION_NOT_GRANTED: Int = -2013
 }
 ```
+
+## Brivo Authentication Errors
+
+```kotlin
+object BrivoLocalAuthenticationErrorCodes {
+    const val SDK_LOCAL_AUTHENTICATION_FAILURE: Int = -4000
+    const val SDK_LOCAL_HARDWARE_UNAVAILABLE: Int = -4001
+    const val SDK_LOCAL_TIMEOUT: Int = -4002
+    const val SDK_LOCAL_HW_NOT_PRESENT: Int = -4003
+    const val SDK_LOCAL_NONE_ENROLLED: Int = -4004
+    const val SDK_LOCAL_AUTHENTICATION_CONTEXT_NOT_SET: Int = -4005
+    const val SDK_LOCAL_AUTHENTICATION_CANCEL: Int = -4006
+    const val SDK_LOCAL_INTENT_NULL: Int = -4007
+    const val SDK_LOCAL_AUTHENTICATION_SYSTEM_CANCEL: Int = -4008
+}```
 
 ## Brivo BLE  Allegion Errors
 
@@ -761,22 +817,6 @@ object BrivoHIDOrigoErrorCodes {
     const val SDK_IS_BUSY = -8008
     const val NOT_ELIGIBLE = -8009
     const val EMPTY_INVITATION_CODE = -8010
-}
-```
-
-## Brivo Authentication Errors
-
-```kotlin
-object BrivoLocalAuthenticationErrorCodes {
-    const val SDK_LOCAL_AUTHENTICATION_FAILURE: Int = -4000
-    const val SDK_LOCAL_HARDWARE_UNAVAILABLE: Int = -4001
-    const val SDK_LOCAL_TIMEOUT: Int = -4002
-    const val SDK_LOCAL_HW_NOT_PRESENT: Int = -4003
-    const val SDK_LOCAL_NONE_ENROLLED: Int = -4004
-    const val SDK_LOCAL_AUTHENTICATION_CONTEXT_NOT_SET: Int = -4005
-    const val SDK_LOCAL_AUTHENTICATION_CANCEL: Int = -4006
-    const val SDK_LOCAL_INTENT_NULL: Int = -4007
-    const val SDK_LOCAL_AUTHENTICATION_SYSTEM_CANCEL: Int = -4008
 }
 ```
 
