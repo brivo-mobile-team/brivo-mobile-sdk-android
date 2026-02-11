@@ -3,6 +3,7 @@ package com.brivo.common_app.repository
 import androidx.fragment.app.FragmentActivity
 import com.brivo.common_app.model.DomainState
 import com.brivo.sdk.enums.ServerRegion
+import com.brivo.sdk.enums.UnlockStrategy
 import com.brivo.sdk.model.BrivoResult
 import com.brivo.sdk.model.BrivoSDKApiState
 import com.brivo.sdk.onair.model.BrivoAuthenticateResponse
@@ -52,7 +53,8 @@ interface BrivoMobileSDKRepository {
     fun unlockAccessPoint(
         passId: String,
         accessPointId: String,
-        activity: FragmentActivity
+        activity: FragmentActivity,
+        unlockStrategy: UnlockStrategy?
     ): Flow<BrivoResult>
 
     fun unlockNearestBLEAccessPoint(

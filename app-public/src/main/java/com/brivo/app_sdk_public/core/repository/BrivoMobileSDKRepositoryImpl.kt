@@ -19,6 +19,7 @@ import com.brivo.sdk.onair.model.BrivoAuthenticateResponse
 import com.brivo.sdk.onair.model.BrivoOnairPass
 import com.brivo.sdk.onair.model.BrivoTokens
 import com.brivo.sdk.onair.repository.BrivoSDKOnair
+import com.brivo.sdk.enums.UnlockStrategy
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -202,12 +203,14 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
     override fun unlockAccessPoint(
         passId: String,
         accessPointId: String,
-        activity: FragmentActivity
+        activity: FragmentActivity,
+        unlockStrategy: UnlockStrategy?
     ): Flow<BrivoResult> {
         return BrivoSDKAccess.unlockAccessPoint(
             passId = passId,
             accessPointId = accessPointId,
-            activity = activity
+            activity = activity,
+            unlockStrategy = unlockStrategy
         )
     }
 

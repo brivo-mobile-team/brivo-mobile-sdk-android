@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -32,7 +33,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.brivo.common_app.R
+import com.brivo.app_sdk_public.R
+import com.brivo.common_app.R as CommonR
 import com.brivo.common_app.features.unlockdoor.model.UnlockDoorUIEvent
 import com.brivo.common_app.features.unlockdoor.presentation.UnlockDoorContent
 import com.brivo.sdk.enums.DoorType
@@ -107,6 +109,29 @@ fun UnlockDoorScreen(
                 onEvent = viewModel::onEvent,
                 onCheckPermissions = onCheckPermissions
             )
+
+            Spacer(Modifier.height(16.dp))
+
+            if (state.accessPointType == DoorType.WAVELYNX) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.force_internet_unlock),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Switch(
+                        checked = state.forceInternetUnlock,
+                        onCheckedChange = { enabled ->
+                            viewModel.onEvent(UnlockDoorUIEvent.ToggleForceInternetUnlock(enabled))
+                        }
+                    )
+                }
+            }
 
             Spacer(Modifier.height(24.dp))
             DoorDetailsBottomSheet(
