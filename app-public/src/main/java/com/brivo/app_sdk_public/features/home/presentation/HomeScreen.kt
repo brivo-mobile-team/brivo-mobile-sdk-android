@@ -127,13 +127,14 @@ fun HomeScreenContent(
                             )
                         )
                     },
-                    onUpdateBottomSheetInformation = { hasAllegionBleCredentials, hasHidOrigoMobilePass, hidOrigoWalletPassEnabled, hasBrivoWalletPass ->
+                    onUpdateBottomSheetInformation = { hasAllegionBleCredentials, hasHidOrigoMobilePass, hidOrigoWalletPassEnabled, hasBrivoWalletPass, dormakabaMobilePassEnabled ->
                         onEvent(
                             HomeUIEvent.UpdateBottomSheetInformation(
                                 hasAllegionBleCredentials = hasAllegionBleCredentials,
                                 hasHidOrigoMobilePass = hasHidOrigoMobilePass,
                                 hidOrigoWalletPassEnabled = hidOrigoWalletPassEnabled,
-                                hasBrivoWalletPass = hasBrivoWalletPass
+                                hasBrivoWalletPass = hasBrivoWalletPass,
+                                dormakabaMobilePassEnabled = dormakabaMobilePassEnabled
                             )
                         )
                     },
@@ -174,7 +175,8 @@ fun HomePreview() {
             hasAllegionBleCredentials = false,
             hasHidOrigoMobilePass = false,
             hidOrigoWalletPassEnabled = false,
-            hasBrivoWalletPass = false
+            hasBrivoWalletPass = false,
+            dormakabaMobilePassEnabled = true
         ),
         BrivoOnairPassUIModel(
             passId = "passId2",
@@ -188,7 +190,8 @@ fun HomePreview() {
             hasAllegionBleCredentials = false,
             hasHidOrigoMobilePass = false,
             hidOrigoWalletPassEnabled = false,
-            hasBrivoWalletPass = false
+            hasBrivoWalletPass = false,
+            dormakabaMobilePassEnabled = false
         )
     )
 

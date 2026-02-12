@@ -9,11 +9,5 @@ data class AccessPointsViewState(
     val loading: Boolean = true,
     val alertMessage: String = "",
     val shouldShowBottomSheet: Boolean = false,
-    val siteDetailsBottomSheetUIModel: SiteDetailsBottomSheetUIModel = SiteDetailsBottomSheetUIModel(
-        hasTrustedNetwork = false,
-        preScreening = null,
-        siteId = "",
-        siteName = "",
-        timeZone = null
-    )
+    val siteDetailsBottomSheetUIModel: SiteDetailsBottomSheetUIModel = SiteDetailsBottomSheetUIModel()
 )

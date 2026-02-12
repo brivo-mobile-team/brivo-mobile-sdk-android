@@ -7,9 +7,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.ExperimentalMaterialApi
@@ -52,7 +55,7 @@ fun PassesList(
     onSitePressed: (String, String) -> Unit,
     onRefresh: () -> Unit,
     onInfoButtonClicked: () -> Unit,
-    onUpdateBottomSheetInformation: (Boolean, Boolean, Boolean, Boolean) -> Unit,
+    onUpdateBottomSheetInformation: (Boolean, Boolean, Boolean, Boolean, Boolean) -> Unit,
     onDismissBottomSheet: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -84,7 +87,11 @@ fun PassesList(
                 .pullRefresh(pullToRefreshState)
         ) {
             LazyColumn(
-                modifier = Modifier.testTag(TestTags.PASSES_LIST),
+                modifier = Modifier
+                    .testTag(TestTags.PASSES_LIST)
+                    .windowInsetsPadding(
+                        insets = WindowInsets.navigationBars
+                    ),
                 contentPadding = PaddingValues(top = 16.dp, bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -92,9 +99,9 @@ fun PassesList(
                     Column {
                         MobilePassHeader(
                             pass = pass,
-                            onClick = { hasAllegionBleCredentials, hasHidOrigoMobilePass, hidOrigoWalletPassEnabled, hasBrivoWalletPass ->
+                            onClick = { hasAllegionBleCredentials, hasHidOrigoMobilePass, hidOrigoWalletPassEnabled, hasBrivoWalletPass, dormakabaMobilePassEnabled ->
                                 onInfoButtonClicked()
-                                onUpdateBottomSheetInformation(hasAllegionBleCredentials, hasHidOrigoMobilePass, hidOrigoWalletPassEnabled, hasBrivoWalletPass)
+                                onUpdateBottomSheetInformation(hasAllegionBleCredentials, hasHidOrigoMobilePass, hidOrigoWalletPassEnabled, hasBrivoWalletPass, dormakabaMobilePassEnabled)
                             }
                         )
                         MobilePassChild(
@@ -154,19 +161,23 @@ fun PassDetailsBottomSheet(
                 verticalArrangement = Arrangement.Top
             ) {
                 Text(
-                    text = "Has Allegion BLE Credentials: ${passDetailsBottomSheetUIModel.hasAllegionBleCredentials}",
+                    text = "Brivo Wallet Pass Status: ${passDetailsBottomSheetUIModel.hasBrivoWalletPass}",
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
-                    text = "Has HID-Origo Mobile Pass: ${passDetailsBottomSheetUIModel.hidOrigoWalletPassEnabled}",
+                    text = "Allegion BLE Credentials Status: ${passDetailsBottomSheetUIModel.hasAllegionBleCredentials}",
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
-                    text = "Has HID-Origo Wallet Enabled: ${passDetailsBottomSheetUIModel.hasHidOrigoMobilePass}",
+                    text = "HID-Origo Mobile Pass: ${passDetailsBottomSheetUIModel.hidOrigoWalletPassEnabled}",
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
-                    text = "Has Brivo Wallet Pass: ${passDetailsBottomSheetUIModel.hasBrivoWalletPass}",
+                    text = "HID-Origo Wallet Pass Status: ${passDetailsBottomSheetUIModel.hasHidOrigoMobilePass}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = "Dormakaba Mobile Pass Status: ${passDetailsBottomSheetUIModel.hasBrivoWalletPass}",
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -178,7 +189,7 @@ fun PassDetailsBottomSheet(
 @Composable
 fun MobilePassHeader(
     pass: BrivoOnairPassUIModel,
-    onClick: (Boolean, Boolean, Boolean, Boolean) -> Unit
+    onClick: (Boolean, Boolean, Boolean, Boolean, Boolean) -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -223,7 +234,8 @@ fun MobilePassHeader(
                     pass.hasAllegionBleCredentials,
                     pass.hasHidOrigoMobilePass,
                     pass.hidOrigoWalletPassEnabled,
-                    pass.hasBrivoWalletPass
+                    pass.hasBrivoWalletPass,
+                    pass.dormakabaMobilePassEnabled
                 )
             },
             modifier = Modifier.align(Alignment.CenterEnd)

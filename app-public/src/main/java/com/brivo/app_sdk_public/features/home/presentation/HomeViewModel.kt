@@ -1,17 +1,18 @@
 package com.brivo.app_sdk_public.features.home.presentation
 
 import android.util.Log
+import android.util.Printer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.brivo.app_sdk_public.BrivoSampleConstants
 import com.brivo.app_sdk_public.features.home.model.HomeUIEvent
 import com.brivo.common_app.domain.usecases.GetBrivoSDKLocallyStoredPassesUseCase
 import com.brivo.common_app.domain.usecases.GetBrivoSDKVersionUseCase
+import com.brivo.common_app.domain.usecases.RefreshAllSDKsUseCase
 import com.brivo.common_app.domain.usecases.RefreshPassesUseCase
 import com.brivo.common_app.features.home.model.BrivoOnairPassUIModel
 import com.brivo.common_app.features.home.model.PassDetailsBottomSheetUIModel
 import com.brivo.common_app.features.home.model.toBrivoOnairPassUIModel
-import com.brivo.common_app.features.home.usecase.RefreshAllegionCredentialsUseCase
 import com.brivo.common_app.model.DomainState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +26,7 @@ class HomeViewModel @Inject constructor(
     private val getBrivoSDKVersionUseCase: GetBrivoSDKVersionUseCase,
     private val getBrivoSDKLocallyStoredPassesUseCase: GetBrivoSDKLocallyStoredPassesUseCase,
     private val refreshPassesUseCase: RefreshPassesUseCase,
-    private val refreshAllegionCredentialsUseCase: RefreshAllegionCredentialsUseCase
+    private val refreshAllSDKsUseCase: RefreshAllSDKsUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeViewState())
@@ -66,7 +67,8 @@ class HomeViewModel @Inject constructor(
                         hasAllegionBleCredentials = event.hasAllegionBleCredentials,
                         hasHidOrigoMobilePass = event.hasHidOrigoMobilePass,
                         hidOrigoWalletPassEnabled = event.hidOrigoWalletPassEnabled,
-                        hasBrivoWalletPass = event.hasBrivoWalletPass
+                        hasBrivoWalletPass = event.hasBrivoWalletPass,
+                        dormakabaMobilePassEnabled = event.dormakabaMobilePassEnabled
                     )
                     it.copy(
                         passDetailsBottomSheetUIModel = passDetailsBottomSheetUIModel
@@ -83,20 +85,6 @@ class HomeViewModel @Inject constructor(
                 it.copy(
                     version = version
                 )
-            }
-        }
-    }
-
-    private fun refreshAllegionCredentials() {
-        viewModelScope.launch {
-            when (refreshAllegionCredentialsUseCase.execute()) {
-                is DomainState.Failed -> {
-                    Log.d("HomeViewModel", "Failed to refresh allegion credentials")
-                }
-
-                is DomainState.Success -> {
-                    Log.d("HomeViewModel", "Success refresh allegion credentials")
-                }
             }
         }
     }
@@ -143,7 +131,7 @@ class HomeViewModel @Inject constructor(
                 )) {
                     is DomainState.Success -> {
                         loadPasses()
-                        refreshAllegionCredentials()
+                        refreshAllSDKsUseCase.execute(passes = emptyList())
                     }
 
                     is DomainState.Failed -> {

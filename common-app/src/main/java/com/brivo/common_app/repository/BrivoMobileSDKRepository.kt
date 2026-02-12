@@ -3,6 +3,7 @@ package com.brivo.common_app.repository
 import androidx.fragment.app.FragmentActivity
 import com.brivo.common_app.model.DomainState
 import com.brivo.sdk.enums.ServerRegion
+import com.brivo.sdk.enums.UnlockStrategy
 import com.brivo.sdk.model.BrivoResult
 import com.brivo.sdk.model.BrivoSDKApiState
 import com.brivo.sdk.onair.model.BrivoAuthenticateResponse
@@ -12,13 +13,13 @@ import kotlinx.coroutines.flow.Flow
 
 interface BrivoMobileSDKRepository {
 
-    fun init(
+    suspend fun init(
         serverRegion: ServerRegion,
         clientId: String,
         clientSecret: String,
         authUrl: String,
         apiUrl: String,
-        ): DomainState<Unit>
+    ): DomainState<Unit>
 
     fun initLocalAuth(
         title: String,
@@ -43,16 +44,11 @@ interface BrivoMobileSDKRepository {
         refreshToken: String
     ): DomainState<BrivoAuthenticateResponse>
 
-    suspend fun refreshAllegionCredentials(): DomainState<Unit>
-
-    suspend fun refreshOrigoCredentials(pass: BrivoOnairPass): DomainState<Unit>
-
-    suspend fun refreshDormakabaCredentials(passes: List<BrivoOnairPass>): DomainState<Unit>
-
     fun unlockAccessPoint(
         passId: String,
         accessPointId: String,
-        activity: FragmentActivity
+        activity: FragmentActivity,
+        unlockStrategy: UnlockStrategy?
     ): Flow<BrivoResult>
 
     fun unlockNearestBLEAccessPoint(
@@ -63,6 +59,8 @@ interface BrivoMobileSDKRepository {
         tokens: BrivoTokens,
         forced: Boolean
     ): BrivoSDKApiState<WalletEligibilityStatus>
+
+    suspend fun refreshAllSDKs(passes: List<BrivoOnairPass>)
 }
 
 

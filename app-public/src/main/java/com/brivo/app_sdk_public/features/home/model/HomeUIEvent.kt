@@ -13,5 +13,6 @@ sealed class HomeUIEvent {
         val hasHidOrigoMobilePass: Boolean,
         val hidOrigoWalletPassEnabled: Boolean,
         val hasBrivoWalletPass: Boolean,
+        val dormakabaMobilePassEnabled: Boolean
     ) : HomeUIEvent()
 }

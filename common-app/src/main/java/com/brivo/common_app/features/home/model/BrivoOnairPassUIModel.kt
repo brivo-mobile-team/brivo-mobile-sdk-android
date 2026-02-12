@@ -15,6 +15,7 @@ data class BrivoOnairPassUIModel(
     val hasHidOrigoMobilePass: Boolean,
     val hidOrigoWalletPassEnabled: Boolean,
     val hasBrivoWalletPass: Boolean,
+    val dormakabaMobilePassEnabled: Boolean
 )
 
 fun BrivoOnairPass.toBrivoOnairPassUIModel() =
@@ -30,5 +31,6 @@ fun BrivoOnairPass.toBrivoOnairPassUIModel() =
         hasAllegionBleCredentials = this.hasAllegionBleCredentials,
         hasHidOrigoMobilePass = this.hasHidOrigoMobilePass,
         hidOrigoWalletPassEnabled = this.hidOrigoWalletPassEnabled,
-        hasBrivoWalletPass = this.hasBrivoWalletPass
+        hasBrivoWalletPass = this.hasBrivoWalletPass,
+        dormakabaMobilePassEnabled = this.dormakabaMobilePassEnabled
     )

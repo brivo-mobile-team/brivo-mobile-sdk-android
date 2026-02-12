@@ -6,6 +6,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.brivo.app_sdk_public.BrivoSampleConstants
 import com.brivo.app_sdk_public.features.unlockdoor.navigation.UnlockDoorArgs
 import com.brivo.common_app.domain.usecases.GetAccessPointDetailsUseCase
 import com.brivo.common_app.features.unlockdoor.model.DoorDetailsBottomSheetUIModel
@@ -17,8 +18,8 @@ import com.brivo.common_app.features.unlockdoor.usecase.UnlockNearestBLEAccessPo
 import com.brivo.common_app.model.DomainState
 import com.brivo.sdk.enums.AccessPointCommunicationState
 import com.brivo.sdk.enums.DoorType
+import com.brivo.sdk.enums.UnlockStrategy
 import com.brivo.sdk.model.BrivoResult
-import com.brivo.sdk.onair.model.BrivoBluetoothReader
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -101,6 +102,10 @@ class UnlockDoorViewModel @Inject constructor(
             is UnlockDoorUIEvent.DismissDormakabaTooltip -> {
                 dismissDormakabaUnlockTooltip()
             }
+
+            is UnlockDoorUIEvent.ToggleForceInternetUnlock -> {
+                _state.update { it.copy(forceInternetUnlock = event.isEnabled) }
+            }
         }
     }
 
@@ -114,13 +119,17 @@ class UnlockDoorViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         doorDetailsBottomSheetUIModel = DoorDetailsBottomSheetUIModel(
-                            siteId = accessPoint.id,
-                            siteName = accessPoint.siteName,
+                            accessPointId = accessPoint.id,
                             doorType = accessPoint.doorType,
-                            bluetoothReader = accessPoint.bluetoothReader,
-                            controlLockSerialNumber = accessPoint.controlLockSerialNumber,
-                            isTwoFactorEnabled = accessPoint.isTwoFactorEnabled,
-                            dormakabaMobilePassEnabled = false
+                            doorModel = accessPoint.controlLockDeviceType,
+                            lockId = accessPoint.controlLockId.toString(),
+                            readerId = if(accessPoint.bluetoothReader.readerUid.isEmpty()) {
+                                accessPoint.controlLockSerialNumber
+                            } else {
+                                accessPoint.bluetoothReader.readerUid
+                            },
+                            twoFactorStatus = accessPoint.isTwoFactorEnabled,
+                            minimumPanelRssi = BrivoSampleConstants.MINIMUM_ALLOWED_RSSI.toString()
                         )
                     )
                 }
@@ -169,11 +178,16 @@ class UnlockDoorViewModel @Inject constructor(
         viewModelScope.launch {
             checkShowDormakabaUnlockTooltip(doorType = _state.value.accessPointType)
             updateDoorState(DoorState.UNLOCKING)
+            val strategy = if (_state.value.forceInternetUnlock) {
+                UnlockStrategy.ForceInternetUnlockForBrivoDoors
+            } else {
+                null
+            }
             unlockDoorUseCase.execute(
                 passId = unlockDoorArgs.passId,
                 accessPointId = unlockDoorArgs.accessPointId,
-                activity = activity
-
+                activity = activity,
+                unlockStrategy = strategy
             ).collect {
                 processUnlockDoorEvent(it)
             }
@@ -291,13 +305,6 @@ data class UnlockDoorViewState(
     val hasTrustedNetwork: Boolean = false,
     val showDormakabaUnlockTooltip: Boolean = false,
     val showBottomSheet: Boolean = false,
-    val doorDetailsBottomSheetUIModel: DoorDetailsBottomSheetUIModel = DoorDetailsBottomSheetUIModel(
-        siteId = "",
-        siteName = "",
-        doorType = DoorType.UNKNOWN,
-        isTwoFactorEnabled = false,
-        bluetoothReader = BrivoBluetoothReader(),
-        controlLockSerialNumber = "",
-        dormakabaMobilePassEnabled = false
-    )
+    val doorDetailsBottomSheetUIModel: DoorDetailsBottomSheetUIModel = DoorDetailsBottomSheetUIModel(),
+    val forceInternetUnlock: Boolean = false
 )

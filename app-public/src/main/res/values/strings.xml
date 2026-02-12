@@ -49,4 +49,5 @@
     <string name="bluetooth_permission_required_to_open_ble_doors">Brivo Mobile Pass requires Bluetooth access to be able to open Bluetooth doors.</string>
     <string name="bluetooth_permission_required">Bluetooth permission required</string>
     <string name="bluetooth_nearby_permission_required">Nearby devices permission required</string>
+    <string name="force_internet_unlock">Force Internet Unlock</string>
 </resources>
