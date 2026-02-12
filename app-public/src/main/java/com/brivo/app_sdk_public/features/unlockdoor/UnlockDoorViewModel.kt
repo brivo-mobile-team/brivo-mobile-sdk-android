@@ -175,7 +175,7 @@ class UnlockDoorViewModel @Inject constructor(
             checkShowDormakabaUnlockTooltip(doorType = _state.value.accessPointType)
             updateDoorState(DoorState.UNLOCKING)
             val strategy = if (_state.value.forceInternetUnlock) {
-                UnlockStrategy.ForceInternetUnlockForWavelynx
+                UnlockStrategy.ForceInternetUnlockForBrivoDoors
             } else {
                 null
             }
