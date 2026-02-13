@@ -73,25 +73,27 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
         error("Not implemented/Not used")
     }
 
+    //uncomment when using allegion SDK
     override suspend fun refreshAllegionCredentials(): DomainState<Unit> {
-        val passes = retrieveSDKLocallyStoredPasses()
-        if (passes is DomainState.Success) {
-            val refreshAllegionResult = passes.data?.values?.toList()?.let {
-                BrivoSDKBLEAllegion.refreshCredentials(it)
-            }
-
-            return when (refreshAllegionResult) {
-                is BrivoSDKApiState.Failed -> {
-                    DomainState.Failed(refreshAllegionResult.brivoError.toString())
-                }
-
-                else -> {
-                    DomainState.Success(Unit)
-                }
-            }
-        } else {
-            return DomainState.Failed("Failed to get passes")
-        }
+//        val passes = retrieveSDKLocallyStoredPasses()
+//        if (passes is DomainState.Success) {
+//            val refreshAllegionResult = passes.data?.values?.toList()?.let {
+//                BrivoSDKBLEAllegion.refreshCredentials(it)
+//            }
+//
+//            return when (refreshAllegionResult) {
+//                is BrivoSDKApiState.Failed -> {
+//                    DomainState.Failed(refreshAllegionResult.brivoError.toString())
+//                }
+//
+//                else -> {
+//                    DomainState.Success(Unit)
+//                }
+//            }
+//        } else {
+//            return DomainState.Failed("Failed to get passes")
+//        }
+        return DomainState.Success(Unit)
     }
 
 
