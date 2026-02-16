@@ -21,4 +21,6 @@ sealed class UnlockDoorUIEvent {
         val negativeButtonText: String,
         val description: String
     ) : UnlockDoorUIEvent()
+
+    data class ToggleForceInternetUnlock(val isEnabled: Boolean) : UnlockDoorUIEvent()
 }

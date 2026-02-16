@@ -19,6 +19,7 @@ import com.brivo.sdk.onair.model.BrivoAuthenticateResponse
 import com.brivo.sdk.onair.model.BrivoOnairPass
 import com.brivo.sdk.onair.model.BrivoTokens
 import com.brivo.sdk.onair.repository.BrivoSDKOnair
+import com.brivo.sdk.enums.UnlockStrategy
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -72,25 +73,27 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
         error("Not implemented/Not used")
     }
 
+    //uncomment when using allegion SDK
     override suspend fun refreshAllegionCredentials(): DomainState<Unit> {
-        val passes = retrieveSDKLocallyStoredPasses()
-        if (passes is DomainState.Success) {
-            val refreshAllegionResult = passes.data?.values?.toList()?.let {
-                BrivoSDKBLEAllegion.refreshCredentials(it)
-            }
-
-            return when (refreshAllegionResult) {
-                is BrivoSDKApiState.Failed -> {
-                    DomainState.Failed(refreshAllegionResult.brivoError.toString())
-                }
-
-                else -> {
-                    DomainState.Success(Unit)
-                }
-            }
-        } else {
-            return DomainState.Failed("Failed to get passes")
-        }
+//        val passes = retrieveSDKLocallyStoredPasses()
+//        if (passes is DomainState.Success) {
+//            val refreshAllegionResult = passes.data?.values?.toList()?.let {
+//                BrivoSDKBLEAllegion.refreshCredentials(it)
+//            }
+//
+//            return when (refreshAllegionResult) {
+//                is BrivoSDKApiState.Failed -> {
+//                    DomainState.Failed(refreshAllegionResult.brivoError.toString())
+//                }
+//
+//                else -> {
+//                    DomainState.Success(Unit)
+//                }
+//            }
+//        } else {
+//            return DomainState.Failed("Failed to get passes")
+//        }
+        return DomainState.Success(Unit)
     }
 
 
@@ -202,12 +205,14 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
     override fun unlockAccessPoint(
         passId: String,
         accessPointId: String,
-        activity: FragmentActivity
+        activity: FragmentActivity,
+        unlockStrategy: UnlockStrategy?
     ): Flow<BrivoResult> {
         return BrivoSDKAccess.unlockAccessPoint(
             passId = passId,
             accessPointId = accessPointId,
-            activity = activity
+            activity = activity,
+            unlockStrategy = unlockStrategy
         )
     }
 

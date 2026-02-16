@@ -17,6 +17,7 @@ import com.brivo.common_app.features.unlockdoor.usecase.UnlockNearestBLEAccessPo
 import com.brivo.common_app.model.DomainState
 import com.brivo.sdk.enums.AccessPointCommunicationState
 import com.brivo.sdk.enums.DoorType
+import com.brivo.sdk.enums.UnlockStrategy
 import com.brivo.sdk.model.BrivoResult
 import com.brivo.sdk.onair.model.BrivoBluetoothReader
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -101,6 +102,10 @@ class UnlockDoorViewModel @Inject constructor(
             is UnlockDoorUIEvent.DismissDormakabaTooltip -> {
                 dismissDormakabaUnlockTooltip()
             }
+
+            is UnlockDoorUIEvent.ToggleForceInternetUnlock -> {
+                _state.update { it.copy(forceInternetUnlock = event.isEnabled) }
+            }
         }
     }
 
@@ -169,11 +174,16 @@ class UnlockDoorViewModel @Inject constructor(
         viewModelScope.launch {
             checkShowDormakabaUnlockTooltip(doorType = _state.value.accessPointType)
             updateDoorState(DoorState.UNLOCKING)
+            val strategy = if (_state.value.forceInternetUnlock) {
+                UnlockStrategy.ForceInternetUnlockForBrivoDoors
+            } else {
+                null
+            }
             unlockDoorUseCase.execute(
                 passId = unlockDoorArgs.passId,
                 accessPointId = unlockDoorArgs.accessPointId,
-                activity = activity
-
+                activity = activity,
+                unlockStrategy = strategy
             ).collect {
                 processUnlockDoorEvent(it)
             }
@@ -299,5 +309,6 @@ data class UnlockDoorViewState(
         bluetoothReader = BrivoBluetoothReader(),
         controlLockSerialNumber = "",
         dormakabaMobilePassEnabled = false
-    )
+    ),
+    val forceInternetUnlock: Boolean = false
 )
