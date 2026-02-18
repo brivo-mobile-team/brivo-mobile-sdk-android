@@ -1,41 +1,36 @@
-package com.brivo.app_sdk.core
+package com.brivo.app_sdk_public.core.repository
 
 import android.annotation.SuppressLint
 import androidx.fragment.app.FragmentActivity
-import com.brivo.app_sdk.App
-import com.brivo.app_sdk.BrivoSampleConstants
-import com.brivo.app_sdk.core.data.SampleAppDataStore
+import com.brivo.app_sdk_public.App
 import com.brivo.common_app.model.DomainState
 import com.brivo.common_app.repository.BrivoMobileSDKRepository
+import com.brivo.common_app.repository.WalletEligibilityStatus
 import com.brivo.sdk.BrivoSDK
 import com.brivo.sdk.BrivoSDKInitializationException
 import com.brivo.sdk.access.BrivoSDKAccess
 import com.brivo.sdk.access.RefreshMode
 import com.brivo.sdk.enums.ServerRegion
-import com.brivo.sdk.enums.UnlockStrategy
-import com.brivo.sdk.hidorigo.BrivoSDKHIDOrigo
 import com.brivo.sdk.localauthentication.BrivoSDKLocalAuthentication
-import com.brivo.sdk.model.AccessPointPath
 import com.brivo.sdk.model.BrivoResult
 import com.brivo.sdk.model.BrivoSDKApiState
 import com.brivo.sdk.model.configuration.BrivoConfiguration
 import com.brivo.sdk.onair.model.BrivoAuthenticateResponse
-import com.brivo.sdk.onair.model.BrivoListReaderCommandResponse
 import com.brivo.sdk.onair.model.BrivoOnairPass
 import com.brivo.sdk.onair.model.BrivoTokens
 import com.brivo.sdk.onair.repository.BrivoSDKOnair
-import com.brivo.sdk.smarthome.model.BrivoSDKSmartHomeConfiguration
-import com.brivo.sdk.smarthome.repository.BrivoSDKSmartHome
+import com.brivo.sdk.enums.UnlockStrategy
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
-import javax.inject.Singleton
 
 @SuppressLint("RestrictedApi")
-@Singleton
 class BrivoMobileSDKRepositoryImpl @Inject constructor(
-    private val sampleAppDataStore: SampleAppDataStore
-) : BrivoMobileSDKRepository, ReaderCommandsRepository {
+) : BrivoMobileSDKRepository {
 
+    /**
+     *  In order to initialize 3rd party SDKs (Allegion, HID Origo, Dormakaba), you have to call their respective module methods on the Builder
+     *  ex: .allegionModule() or .hidorigoModule() or .dormakabaModule()
+     */
     override suspend fun init(
         serverRegion: ServerRegion,
         clientId: String,
@@ -44,21 +39,12 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
         apiUrl: String,
     ): DomainState<Unit> {
         try {
-            val environment = sampleAppDataStore.getEnvironment()
-
             val brivoConfiguration = BrivoConfiguration.Builder(
                 clientId = clientId,
                 clientSecret = clientSecret,
                 useSDKStorage = true
             ).authUrl(url = authUrl)
                 .apiUrl(url = apiUrl)
-                .allegionModule()
-                .hidorigoModule(
-                    config = BrivoSampleConstants.getHIDOrigoConfiguration(environment)
-                )
-                .dormakabaModule(
-                    config = BrivoSampleConstants.getDormakabaConfig(environment)
-                )
                 .build()
             BrivoSDK.init(
                 context = App.instance.applicationContext,
@@ -68,22 +54,18 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
             return DomainState.Failed(e.message ?: "Failed to initialize Brivo SDK")
         }
 
-        try {
-            BrivoSDKSmartHome.instance?.init(
-                brivoSmartHomeConfiguration = BrivoSDKSmartHomeConfiguration(
-                    apiUrl = BrivoSampleConstants.SMART_HOME_API_URL,
-                    useSDKStorage = true
-                )
-            )
-        } catch (e: BrivoSDKInitializationException) {
-            return DomainState.Failed(e.message ?: "Failed to initialize Brivo Smart Home SDK")
-        }
-
         return DomainState.Success(Unit)
     }
 
     override suspend fun refreshAllSDKs(passes: List<BrivoOnairPass>) {
         BrivoSDKAccess.refreshCredentials(passes, refreshMode = RefreshMode.FALLBACK_TO_LOCAL)
+    }
+
+    override suspend fun getWalletEligibilityStatus(
+        tokens: BrivoTokens,
+        forced: Boolean
+    ): BrivoSDKApiState<WalletEligibilityStatus> {
+        error("Not implemented/Not used")
     }
 
     override fun initLocalAuth(
@@ -122,7 +104,8 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
         token: String
     ): DomainState<BrivoOnairPass?> {
 
-        return when (val result = BrivoSDKOnair.instance.redeemPass(email, token)) {
+        val result = BrivoSDKOnair.instance.redeemPass(email, token)
+        return when (result) {
             is BrivoSDKApiState.Success -> {
                 DomainState.Success(result.data)
             }
@@ -153,6 +136,7 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
                 e.message ?: "Failed to retrieve locally stored passes"
             )
         }
+
     }
 
     override suspend fun refreshPass(
@@ -166,10 +150,7 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
             }
 
             is BrivoSDKApiState.Failed -> {
-                DomainState.Failed(
-                    error = request.brivoError.message ?: "Failed to refresh pass",
-                    errorCode = request.brivoError.code
-                )
+                DomainState.Failed(request.brivoError.message ?: "Failed to refresh pass")
             }
         }
 
@@ -209,65 +190,10 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
     }
 
     override fun unlockNearestBLEAccessPoint(
-        activity: FragmentActivity
+        activity: FragmentActivity,
     ): Flow<BrivoResult> {
         return BrivoSDKAccess.unlockNearestBLEAccessPoint(
             activity = activity,
         )
-    }
-
-    override suspend fun getWalletEligibilityStatus(
-        tokens: BrivoTokens,
-        forced: Boolean
-    ): BrivoSDKApiState<com.brivo.common_app.repository.WalletEligibilityStatus> {
-        return when (val result = BrivoSDKHIDOrigo.getWalletEligibilityStatus(
-            tokens,
-            forced
-        )) {
-            is BrivoSDKApiState.Failed -> {
-                BrivoSDKApiState.Failed(result.brivoError)
-            }
-
-            is BrivoSDKApiState.Success -> {
-                BrivoSDKApiState.Success(
-                    com.brivo.common_app.repository.WalletEligibilityStatus(
-                        result.data.hasPurchasedNFC,
-                        result.data.hasCurrentCredential
-                    )
-                )
-            }
-        }
-    }
-
-    override suspend fun getReaderCommands(
-        tokens: BrivoTokens,
-        accessPointIds: Set<String>
-    ): BrivoSDKApiState<BrivoListReaderCommandResponse> {
-        return when (val result =
-            BrivoSDKOnair.instance.getReaderCommands(tokens, accessPointIds)) {
-            is BrivoSDKApiState.Failed -> {
-                BrivoSDKApiState.Failed(result.brivoError)
-            }
-
-            is BrivoSDKApiState.Success -> {
-                BrivoSDKApiState.Success(result.data)
-            }
-        }
-    }
-
-    override suspend fun engageReaderCommand(
-        tokens: BrivoTokens,
-        accessPointPath: AccessPointPath,
-    ): BrivoSDKApiState<Unit> {
-        return when (val result =
-            BrivoSDKOnair.instance.engageReaderCommand(tokens, accessPointPath, "1")) {
-            is BrivoSDKApiState.Failed -> {
-                BrivoSDKApiState.Failed(result.brivoError)
-            }
-
-            is BrivoSDKApiState.Success -> {
-                BrivoSDKApiState.Success(Unit)
-            }
-        }
     }
 }
