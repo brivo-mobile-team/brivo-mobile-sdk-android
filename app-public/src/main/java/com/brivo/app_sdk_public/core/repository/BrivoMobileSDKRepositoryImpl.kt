@@ -9,12 +9,12 @@ import com.brivo.common_app.repository.WalletEligibilityStatus
 import com.brivo.sdk.BrivoSDK
 import com.brivo.sdk.BrivoSDKInitializationException
 import com.brivo.sdk.access.BrivoSDKAccess
-import com.brivo.sdk.ble.allegion.BrivoSDKBLEAllegion
+import com.brivo.sdk.access.RefreshMode
 import com.brivo.sdk.enums.ServerRegion
 import com.brivo.sdk.localauthentication.BrivoSDKLocalAuthentication
-import com.brivo.sdk.model.BrivoConfiguration
 import com.brivo.sdk.model.BrivoResult
 import com.brivo.sdk.model.BrivoSDKApiState
+import com.brivo.sdk.model.configuration.BrivoConfiguration
 import com.brivo.sdk.onair.model.BrivoAuthenticateResponse
 import com.brivo.sdk.onair.model.BrivoOnairPass
 import com.brivo.sdk.onair.model.BrivoTokens
@@ -27,7 +27,11 @@ import javax.inject.Inject
 class BrivoMobileSDKRepositoryImpl @Inject constructor(
 ) : BrivoMobileSDKRepository {
 
-    override fun init(
+    /**
+     *  In order to initialize 3rd party SDKs (Allegion, HID Origo, Dormakaba), you have to call their respective module methods on the Builder
+     *  ex: .allegionModule() or .hidorigoModule() or .dormakabaModule()
+     */
+    override suspend fun init(
         serverRegion: ServerRegion,
         clientId: String,
         clientSecret: String,
@@ -35,35 +39,26 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
         apiUrl: String,
     ): DomainState<Unit> {
         try {
+            val brivoConfiguration = BrivoConfiguration.Builder(
+                clientId = clientId,
+                clientSecret = clientSecret,
+                useSDKStorage = true
+            ).authUrl(url = authUrl)
+                .apiUrl(url = apiUrl)
+                .build()
             BrivoSDK.init(
                 context = App.instance.applicationContext,
-                brivoConfiguration = BrivoConfiguration(
-                    clientId = clientId,
-                    clientSecret = clientSecret,
-                    authUrl = authUrl,
-                    apiUrl = apiUrl,
-                    serverRegion = serverRegion,
-                    useSDKStorage = true,
-                )
+                brivoConfiguration = brivoConfiguration,
             )
         } catch (e: BrivoSDKInitializationException) {
-            return DomainState.Failed(e.message!!)
-        }
-        try {
-            val result = BrivoSDKBLEAllegion.init()
-        } catch (e: BrivoSDKInitializationException) {
-            return DomainState.Failed(e.message ?: "Failed to initialize BrivoSDKBLEAllegion")
+            return DomainState.Failed(e.message ?: "Failed to initialize Brivo SDK")
         }
 
         return DomainState.Success(Unit)
     }
 
-    override suspend fun refreshOrigoCredentials(pass: BrivoOnairPass): DomainState<Unit> {
-        error("Not implemented/Not used")
-    }
-
-    override suspend fun refreshDormakabaCredentials(passes: List<BrivoOnairPass>): DomainState<Unit> {
-        error("Not implemented/Not used")
+    override suspend fun refreshAllSDKs(passes: List<BrivoOnairPass>) {
+        BrivoSDKAccess.refreshCredentials(passes, refreshMode = RefreshMode.FALLBACK_TO_LOCAL)
     }
 
     override suspend fun getWalletEligibilityStatus(
@@ -72,30 +67,6 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
     ): BrivoSDKApiState<WalletEligibilityStatus> {
         error("Not implemented/Not used")
     }
-
-    //uncomment when using allegion SDK
-    override suspend fun refreshAllegionCredentials(): DomainState<Unit> {
-//        val passes = retrieveSDKLocallyStoredPasses()
-//        if (passes is DomainState.Success) {
-//            val refreshAllegionResult = passes.data?.values?.toList()?.let {
-//                BrivoSDKBLEAllegion.refreshCredentials(it)
-//            }
-//
-//            return when (refreshAllegionResult) {
-//                is BrivoSDKApiState.Failed -> {
-//                    DomainState.Failed(refreshAllegionResult.brivoError.toString())
-//                }
-//
-//                else -> {
-//                    DomainState.Success(Unit)
-//                }
-//            }
-//        } else {
-//            return DomainState.Failed("Failed to get passes")
-//        }
-        return DomainState.Success(Unit)
-    }
-
 
     override fun initLocalAuth(
         title: String,
@@ -189,13 +160,15 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
         accessToken: String,
         refreshToken: String
     ): DomainState<BrivoAuthenticateResponse> {
-        return when (val refreshResult = BrivoSDKOnair.instance.refreshAccessTokenWithToken(accessToken, refreshToken)){
+        return when (val refreshResult =
+            BrivoSDKOnair.instance.refreshAccessTokenWithToken(accessToken, refreshToken)) {
             is BrivoSDKApiState.Failed -> {
                 DomainState.Failed(
                     error = refreshResult.brivoError.message ?: "Failed to refresh pass",
                     errorCode = refreshResult.brivoError.code
                 )
             }
+
             is BrivoSDKApiState.Success -> {
                 DomainState.Success(refreshResult.data)
             }

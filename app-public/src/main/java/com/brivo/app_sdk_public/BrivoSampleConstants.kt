@@ -24,6 +24,7 @@ object BrivoSampleConstants {
     const val PASS_ID = "PASS_ID"
     const val SELECTED_ACCESS_POINT = "SELECTED_ACCESS_POINT"
     const val IS_MAGIC_DOOR = "IS_MAGIC_DOOR"
+    const val MINIMUM_ALLOWED_RSSI = 90
 }
 
 private fun requireGradleProperties(requiredProperty: String): String{

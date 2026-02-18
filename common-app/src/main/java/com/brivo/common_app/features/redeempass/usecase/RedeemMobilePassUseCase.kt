@@ -16,7 +16,6 @@ class RedeemMobilePassUseCase @Inject constructor(
             }
 
             is DomainState.Success -> {
-                result.data?.let { brivoSdkMobileRepository.refreshAllegionCredentials() }
                 DomainState.Success(result.data)
             }
         }

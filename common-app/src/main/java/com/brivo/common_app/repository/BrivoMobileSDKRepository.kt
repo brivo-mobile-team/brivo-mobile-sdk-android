@@ -13,13 +13,13 @@ import kotlinx.coroutines.flow.Flow
 
 interface BrivoMobileSDKRepository {
 
-    fun init(
+    suspend fun init(
         serverRegion: ServerRegion,
         clientId: String,
         clientSecret: String,
         authUrl: String,
         apiUrl: String,
-        ): DomainState<Unit>
+    ): DomainState<Unit>
 
     fun initLocalAuth(
         title: String,
@@ -44,12 +44,6 @@ interface BrivoMobileSDKRepository {
         refreshToken: String
     ): DomainState<BrivoAuthenticateResponse>
 
-    suspend fun refreshAllegionCredentials(): DomainState<Unit>
-
-    suspend fun refreshOrigoCredentials(pass: BrivoOnairPass): DomainState<Unit>
-
-    suspend fun refreshDormakabaCredentials(passes: List<BrivoOnairPass>): DomainState<Unit>
-
     fun unlockAccessPoint(
         passId: String,
         accessPointId: String,
@@ -65,6 +59,8 @@ interface BrivoMobileSDKRepository {
         tokens: BrivoTokens,
         forced: Boolean
     ): BrivoSDKApiState<WalletEligibilityStatus>
+
+    suspend fun refreshAllSDKs(passes: List<BrivoOnairPass>)
 }
 
 

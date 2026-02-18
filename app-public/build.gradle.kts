@@ -16,12 +16,12 @@ val VERSION_NAME: String? by properties
 
 android {
     namespace = "com.brivo.app_sdk_public"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.brivo.app_sdk_public"
         minSdk = 29
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = VERSION_NAME?.removeSurrounding("\"")
 
@@ -111,9 +111,6 @@ dependencies {
     implementation(platform("androidx.compose:compose-bom:2025.06.01"))
     implementation("com.karumi:dexter:6.2.3")
     implementation("androidx.core:core-ktx:1.16.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.1")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.1")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.1")
     implementation("androidx.activity:activity-compose:1.10.1")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
@@ -136,4 +133,11 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.8.3")
 
     testImplementation("junit:junit:4.13.2")
+
+
+    val lifeCycleVersion = "2.9.4"
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifeCycleVersion")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifeCycleVersion")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifeCycleVersion")
+    implementation("androidx.lifecycle:lifecycle-process:$lifeCycleVersion")
 }

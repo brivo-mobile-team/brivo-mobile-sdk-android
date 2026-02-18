@@ -9,7 +9,7 @@ class InitializeBrivoSDKUseCase @Inject constructor(
     private val brivoSdkMobileRepository: BrivoMobileSDKRepositoryImpl
 ) {
 
-    fun execute(serverRegion: ServerRegion) {
+    suspend fun execute(serverRegion: ServerRegion) {
         when (serverRegion) {
             ServerRegion.UNITED_STATES -> {
                 brivoSdkMobileRepository.init(

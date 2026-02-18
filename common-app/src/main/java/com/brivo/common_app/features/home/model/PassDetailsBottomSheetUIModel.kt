@@ -6,4 +6,5 @@ data class PassDetailsBottomSheetUIModel(
     val hasHidOrigoMobilePass: Boolean = false,
     val hidOrigoWalletPassEnabled: Boolean = false,
     val hasBrivoWalletPass: Boolean = false,
+    val dormakabaMobilePassEnabled: Boolean = false
 )

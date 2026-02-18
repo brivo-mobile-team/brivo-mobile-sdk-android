@@ -29,15 +29,19 @@ class RedeemPassViewModel @Inject constructor(
             is RedeemPassUIEvent.UpdateEmail -> {
                 updateEmail(newValue = event.newValue)
             }
+
             is RedeemPassUIEvent.UpdateToken -> {
                 updateToken(newValue = event.newValue)
             }
+
             is RedeemPassUIEvent.UpdateRegion -> {
                 updateRegion(isRegionUS = event.isRegionUS)
             }
+
             is RedeemPassUIEvent.UpdateAlertMessage -> {
                 updateAlertMessage(alertMessage = event.message)
             }
+
             is RedeemPassUIEvent.RedeemPass -> {
                 redeemPass()
             }
@@ -87,15 +91,16 @@ class RedeemPassViewModel @Inject constructor(
     }
 
     private fun updateRegion(isRegionUS: Boolean) {
-        if(isRegionUS){
-            initializeBrivoSDKUseCase.execute(
-                serverRegion = ServerRegion.UNITED_STATES
-            )
-        }
-        else {
-            initializeBrivoSDKUseCase.execute(
-                serverRegion = ServerRegion.EUROPE
-            )
+        viewModelScope.launch {
+            if (isRegionUS) {
+                initializeBrivoSDKUseCase.execute(
+                    serverRegion = ServerRegion.UNITED_STATES
+                )
+            } else {
+                initializeBrivoSDKUseCase.execute(
+                    serverRegion = ServerRegion.EUROPE
+                )
+            }
         }
     }
 
@@ -114,12 +119,14 @@ class RedeemPassViewModel @Inject constructor(
                 is DomainState.Success -> {
                     updateMobilePassRedeemed()
                 }
+
                 is DomainState.Failed -> {
                     updateAlertMessage(result.error)
                 }
             }
         }
     }
+
 
     data class RedeemPassViewState(
         val email: TextFieldValue = TextFieldValue(""),

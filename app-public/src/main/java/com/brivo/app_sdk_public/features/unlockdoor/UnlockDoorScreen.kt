@@ -38,7 +38,6 @@ import com.brivo.common_app.R as CommonR
 import com.brivo.common_app.features.unlockdoor.model.UnlockDoorUIEvent
 import com.brivo.common_app.features.unlockdoor.presentation.UnlockDoorContent
 import com.brivo.sdk.enums.DoorType
-import com.brivo.sdk.onair.model.BrivoBluetoothReader
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -136,12 +135,13 @@ fun UnlockDoorScreen(
             Spacer(Modifier.height(24.dp))
             DoorDetailsBottomSheet(
                 sheetState = sheetState,
-                siteId = state.doorDetailsBottomSheetUIModel.siteId,
-                siteName = state.doorDetailsBottomSheetUIModel.siteName,
+                accessPointId = state.doorDetailsBottomSheetUIModel.accessPointId,
                 doorType = state.doorDetailsBottomSheetUIModel.doorType,
-                isTwoFactorEnabled = state.doorDetailsBottomSheetUIModel.isTwoFactorEnabled,
-                bluetoothReader = state.doorDetailsBottomSheetUIModel.bluetoothReader,
-                controlLockSerialNumber = state.doorDetailsBottomSheetUIModel.controlLockSerialNumber,
+                doorModel = state.doorDetailsBottomSheetUIModel.doorModel,
+                lockId = state.doorDetailsBottomSheetUIModel.lockId,
+                readerId = state.doorDetailsBottomSheetUIModel.readerId,
+                twoFactorStatus = state.doorDetailsBottomSheetUIModel.twoFactorStatus,
+                minimumPanelRssi = state.doorDetailsBottomSheetUIModel.minimumPanelRssi,
                 shouldShowBotomSheet = state.showBottomSheet,
                 onDismissRequest = {
                     viewModel.updateShouldShowBottomSheet(false)
@@ -156,12 +156,13 @@ fun UnlockDoorScreen(
 fun DoorDetailsBottomSheet(
     sheetState: SheetState,
     shouldShowBotomSheet: Boolean,
-    siteId: String,
-    siteName: String,
+    accessPointId: String,
     doorType: DoorType,
-    isTwoFactorEnabled: Boolean,
-    bluetoothReader: BrivoBluetoothReader,
-    controlLockSerialNumber: String,
+    doorModel: String,
+    lockId: String,
+    readerId: String,
+    twoFactorStatus: Boolean,
+    minimumPanelRssi: String,
     onDismissRequest: () -> Unit
 ) {
     if(shouldShowBotomSheet) {
@@ -187,12 +188,7 @@ fun DoorDetailsBottomSheet(
                 verticalArrangement = Arrangement.Top
             ) {
                 Text(
-                    text = "Site ID: $siteId}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                Text(
-                    text = "Site Name: $siteName",
+                    text = "Access Point Id: $accessPointId",
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
@@ -202,17 +198,27 @@ fun DoorDetailsBottomSheet(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 Text(
-                    text = "Two Factor Enabled: $isTwoFactorEnabled",
+                    text = "Door Model: $doorModel",
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 Text(
-                    text = "Bluetooth Reader: $bluetoothReader",
+                    text = "Lock Id: $lockId",
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 Text(
-                    text = "Control Lock Serial Number: $controlLockSerialNumber",
+                    text = "Reader Id: $readerId",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Text(
+                    text = "Two Factor Status: $twoFactorStatus",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Text(
+                    text = "Minimum Panel Rssi: $minimumPanelRssi",
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )

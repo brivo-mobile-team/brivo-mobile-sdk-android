@@ -6,6 +6,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.brivo.app_sdk_public.BrivoSampleConstants
 import com.brivo.app_sdk_public.features.unlockdoor.navigation.UnlockDoorArgs
 import com.brivo.common_app.domain.usecases.GetAccessPointDetailsUseCase
 import com.brivo.common_app.features.unlockdoor.model.DoorDetailsBottomSheetUIModel
@@ -19,7 +20,6 @@ import com.brivo.sdk.enums.AccessPointCommunicationState
 import com.brivo.sdk.enums.DoorType
 import com.brivo.sdk.enums.UnlockStrategy
 import com.brivo.sdk.model.BrivoResult
-import com.brivo.sdk.onair.model.BrivoBluetoothReader
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -119,13 +119,17 @@ class UnlockDoorViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         doorDetailsBottomSheetUIModel = DoorDetailsBottomSheetUIModel(
-                            siteId = accessPoint.id,
-                            siteName = accessPoint.siteName,
+                            accessPointId = accessPoint.id,
                             doorType = accessPoint.doorType,
-                            bluetoothReader = accessPoint.bluetoothReader,
-                            controlLockSerialNumber = accessPoint.controlLockSerialNumber,
-                            isTwoFactorEnabled = accessPoint.isTwoFactorEnabled,
-                            dormakabaMobilePassEnabled = false
+                            doorModel = accessPoint.controlLockDeviceType,
+                            lockId = accessPoint.controlLockId.toString(),
+                            readerId = if(accessPoint.bluetoothReader.readerUid.isEmpty()) {
+                                accessPoint.controlLockSerialNumber
+                            } else {
+                                accessPoint.bluetoothReader.readerUid
+                            },
+                            twoFactorStatus = accessPoint.isTwoFactorEnabled,
+                            minimumPanelRssi = BrivoSampleConstants.MINIMUM_ALLOWED_RSSI.toString()
                         )
                     )
                 }
@@ -301,14 +305,6 @@ data class UnlockDoorViewState(
     val hasTrustedNetwork: Boolean = false,
     val showDormakabaUnlockTooltip: Boolean = false,
     val showBottomSheet: Boolean = false,
-    val doorDetailsBottomSheetUIModel: DoorDetailsBottomSheetUIModel = DoorDetailsBottomSheetUIModel(
-        siteId = "",
-        siteName = "",
-        doorType = DoorType.UNKNOWN,
-        isTwoFactorEnabled = false,
-        bluetoothReader = BrivoBluetoothReader(),
-        controlLockSerialNumber = "",
-        dormakabaMobilePassEnabled = false
-    ),
+    val doorDetailsBottomSheetUIModel: DoorDetailsBottomSheetUIModel = DoorDetailsBottomSheetUIModel(),
     val forceInternetUnlock: Boolean = false
 )
