@@ -2,7 +2,7 @@
 buildscript {
     val kotlin_version by extra("2.2.0")
     val kotlinx_serialization by extra("1.6.3")
-    val brivoSdkVersion by extra("3.0.1")
+    val brivoSdkVersion by extra("3.1.0")
 
     repositories {
         google()

@@ -1,4 +1,4 @@
-package com.brivo.common_app.features.accesspoints.presentation
+package com.brivo.common_app.features.devices.presentation
 
 import AlertMessageDialog
 import androidx.compose.foundation.Image
@@ -9,12 +9,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Info
@@ -38,10 +40,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.brivo.common_app.R
-import com.brivo.common_app.features.accesspoints.model.AccessPointUIModel
-import com.brivo.common_app.features.accesspoints.model.AccessPointsUIEvent
-import com.brivo.common_app.features.accesspoints.model.AccessPointsViewState
-import com.brivo.common_app.features.accesspoints.model.SiteDetailsBottomSheetUIModel
+import com.brivo.common_app.features.devices.model.AccessPointUIModel
+import com.brivo.common_app.features.devices.model.AccessPointsUIEvent
+import com.brivo.common_app.features.devices.model.AccessPointsViewState
+import com.brivo.common_app.features.devices.model.ResideoThermostatUIModel
+import com.brivo.common_app.features.devices.model.SiteDetailsBottomSheetUIModel
 import com.brivo.sdk.enums.DoorType
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,6 +52,7 @@ import com.brivo.sdk.enums.DoorType
 fun AccessPointsContent(
     state: AccessPointsViewState,
     onAccessPointPressed: (String, String, String) -> Unit,
+    onThermostatPressed: (String) -> Unit,
     onEvent: (AccessPointsUIEvent) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -104,11 +108,13 @@ fun AccessPointsContent(
                         onEvent(AccessPointsUIEvent.ShouldShowBottomSheet(false))
                     }
                 )
-                AccessPointsList(
-                    accessPoints = state.accessPoints,
+                DevicesList(
+                    modifier = Modifier.padding(horizontal = 16.dp),
                     loading = state.loading,
+                    accessPoints = state.accessPoints,
+                    thermostats = state.thermostats,
                     onAccessPointPressed = onAccessPointPressed,
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    onThermostatPressed = onThermostatPressed
                 )
             }
         }
@@ -175,14 +181,17 @@ fun SiteDetailsBottomSheet(
     }
 }
 
+
 @Composable
-fun AccessPointsList(
+fun DevicesList(
     modifier: Modifier = Modifier,
     loading: Boolean,
     accessPoints: List<AccessPointUIModel>,
-    onAccessPointPressed: (String, String, String) -> Unit
+    thermostats: List<ResideoThermostatUIModel>,
+    onAccessPointPressed: (String, String, String) -> Unit,
+    onThermostatPressed: (String) -> Unit
 ) {
-    if (accessPoints.isEmpty() && !loading) {
+    if (accessPoints.isEmpty() && thermostats.isEmpty() && !loading) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -198,52 +207,128 @@ fun AccessPointsList(
         }
     } else {
         LazyColumn(
-            modifier = modifier,
-            contentPadding = PaddingValues(top = 16.dp),
+            modifier = modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            itemsIndexed(accessPoints) { _, accessPoint ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onAccessPointPressed(accessPoint.id, accessPoint.accessPointName, accessPoint.doorType.name) }
-                        .shadow(1.dp, shape = MaterialTheme.shapes.small)
-                        .background(
-                            MaterialTheme.colorScheme.surfaceVariant,
-                            MaterialTheme.shapes.small
-                        )
-                        .padding(horizontal = 16.dp, vertical = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    val drawable = when (accessPoint.doorType) {
-                        DoorType.INTERNET -> R.drawable.ic_net
-                        DoorType.ALLEGION, DoorType.ALLEGION_BLE -> R.drawable.ic_engage
-                        DoorType.WAVELYNX -> R.drawable.ic_brivo
-                        DoorType.HID_ORIGO -> R.drawable.ic_hid
-                        else -> null
-                    }
-                    if (drawable != null) {
-                        Image(
-                            modifier = Modifier.size(24.dp),
-                            painter = painterResource(id = drawable),
-                            contentDescription = stringResource(id = R.string.access_point_door_type)
-                        )
-                    }
+            if (thermostats.isEmpty() && accessPoints.isNotEmpty()) {
+                item {
+                    Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        modifier = Modifier
-                            .padding(start = 16.dp)
-                            .weight(1f),
-                        text = accessPoint.accessPointName,
-                        style = MaterialTheme.typography.bodyLarge
+                        text = stringResource(R.string.brivo_access_points_label),
+                        style = MaterialTheme.typography.headlineSmall,
                     )
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        contentDescription = accessPoint.accessPointName,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
+            items(accessPoints) { accessPoint ->
+                AccessPointRow(
+                    accessPoint = accessPoint,
+                    onAccessPointPressed = onAccessPointPressed
+                )
+            }
+
+            if (thermostats.isNotEmpty() && accessPoints.isEmpty()) {
+                item {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = stringResource(R.string.brivo_thermostats_label),
+                        style = MaterialTheme.typography.headlineSmall,
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+
+            items(thermostats) { thermostat ->
+                ThermostatRow(
+                    thermostat = thermostat,
+                    onThermostatPressed = onThermostatPressed
+                )
+            }
         }
+    }
+}
+
+@Composable
+fun AccessPointRow(
+    accessPoint: AccessPointUIModel,
+    onAccessPointPressed: (String, String, String) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(1.dp, shape = MaterialTheme.shapes.small)
+            .background(
+                MaterialTheme.colorScheme.surfaceVariant,
+                MaterialTheme.shapes.small
+            )
+            .clickable {
+                onAccessPointPressed(
+                    accessPoint.id,
+                    accessPoint.accessPointName,
+                    accessPoint.doorType.name
+                )
+            }
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        val drawable = when (accessPoint.doorType) {
+            DoorType.INTERNET -> R.drawable.ic_net
+            DoorType.ALLEGION, DoorType.ALLEGION_BLE -> R.drawable.ic_engage
+            DoorType.WAVELYNX -> R.drawable.ic_brivo
+            DoorType.HID_ORIGO -> R.drawable.ic_hid
+            else -> null
+        }
+        if (drawable != null) {
+            Image(
+                modifier = Modifier.size(24.dp),
+                painter = painterResource(id = drawable),
+                contentDescription = stringResource(id = R.string.access_point_door_type)
+            )
+        }
+        Text(
+            modifier = Modifier
+                .padding(start = 16.dp)
+                .weight(1f),
+            text = accessPoint.accessPointName,
+            style = MaterialTheme.typography.bodyLarge
+        )
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = accessPoint.accessPointName,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+fun ThermostatRow(
+    thermostat: ResideoThermostatUIModel,
+    onThermostatPressed: (String) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(1.dp, shape = MaterialTheme.shapes.small)
+            .background(
+                MaterialTheme.colorScheme.surfaceVariant,
+                MaterialTheme.shapes.small
+            )
+            .clickable { onThermostatPressed(thermostat.id) }
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            modifier = Modifier
+                .padding(start = 16.dp)
+                .weight(1f),
+            text = thermostat.name,
+            style = MaterialTheme.typography.bodyLarge
+        )
+        Text(
+            text = thermostat.currentTemperature,
+            style = MaterialTheme.typography.bodyLarge
+        )
     }
 }
 

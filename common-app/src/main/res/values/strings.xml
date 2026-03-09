@@ -52,4 +52,9 @@
     <string name="bluetooth_permission_required">Bluetooth permission required</string>
     <string name="bluetooth_nearby_permission_required">Nearby devices permission required</string>
     <string name="unlock_door_dormakaba_tooltip">Tap your phone on the lock</string>
+
+    <!--    Access Points-->
+    <string name="brivo_access_points_label">Access Points</string>
+    <!--    Brivo Thermostats-->
+    <string name="brivo_thermostats_label">Thermostats</string>
 </resources>

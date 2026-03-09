@@ -1,4 +1,4 @@
-package com.brivo.common_app.features.accesspoints.model
+package com.brivo.common_app.features.devices.model
 
 data class SiteDetailsBottomSheetUIModel(
     val siteId: String = "",

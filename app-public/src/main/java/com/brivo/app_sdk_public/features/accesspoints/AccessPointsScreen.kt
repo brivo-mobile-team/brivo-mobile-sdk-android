@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.brivo.common_app.features.accesspoints.presentation.AccessPointsContent
+import com.brivo.common_app.features.devices.presentation.AccessPointsContent
 
 @Composable
 fun AccessPointsScreen(
@@ -18,6 +18,9 @@ fun AccessPointsScreen(
         state = state,
         onAccessPointPressed = { accessPointId, accessPointName, accessPointType ->
             onAccessPointPressed(state.passId, accessPointId, state.siteId,accessPointName, accessPointType, state.selectedSiteHasTrustedNetwork)
+        },
+        onThermostatPressed = {
+            // should be handled in the future
         },
         onEvent = viewModel::onEvent,
     )

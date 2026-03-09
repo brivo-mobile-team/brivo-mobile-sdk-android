@@ -5,10 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.brivo.app_sdk_public.features.accesspoints.navigation.AccessPointsArgs
 import com.brivo.common_app.domain.usecases.GetBrivoSDKLocallyStoredPassesUseCase
-import com.brivo.common_app.features.accesspoints.model.AccessPointsUIEvent
-import com.brivo.common_app.features.accesspoints.model.AccessPointsViewState
-import com.brivo.common_app.features.accesspoints.model.SiteDetailsBottomSheetUIModel
-import com.brivo.common_app.features.accesspoints.model.toAccessPointUIModel
+import com.brivo.common_app.features.devices.model.AccessPointsUIEvent
+import com.brivo.common_app.features.devices.model.AccessPointsViewState
+import com.brivo.common_app.features.devices.model.SiteDetailsBottomSheetUIModel
+import com.brivo.common_app.features.devices.model.toAccessPointUIModel
 import com.brivo.common_app.model.DomainState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
