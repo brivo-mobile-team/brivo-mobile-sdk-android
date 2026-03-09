@@ -1,4 +1,4 @@
-package com.brivo.common_app.features.accesspoints.model
+package com.brivo.common_app.features.devices.model
 
 sealed class AccessPointsUIEvent {
     data class UpdateAlertMessage(val message: String) : AccessPointsUIEvent()

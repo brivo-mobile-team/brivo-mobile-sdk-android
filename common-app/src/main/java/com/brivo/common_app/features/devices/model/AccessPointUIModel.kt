@@ -1,4 +1,4 @@
-package com.brivo.common_app.features.accesspoints.model
+package com.brivo.common_app.features.devices.model
 
 import com.brivo.sdk.enums.DoorType
 import com.brivo.sdk.onair.model.BrivoAccessPoint
@@ -13,10 +13,13 @@ data class AccessPointUIModel(
 fun BrivoAccessPoint.toAccessPointUIModel() =
     AccessPointUIModel(
         id = this.id,
-        accessPointName = this.name ?: "",
+        accessPointName = this.name,
         doorType = if (this.readerType == ReaderType.HID_ORIGO) {
             DoorType.HID_ORIGO
         } else {
             this.doorType
         }
     )
+
+
+

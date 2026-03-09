@@ -1,4 +1,4 @@
-package com.brivo.common_app.features.accesspoints.model
+package com.brivo.common_app.features.devices.model
 
 data class AccessPointsViewState(
     val passId: String = "",
@@ -6,6 +6,7 @@ data class AccessPointsViewState(
     val siteId: String = "",
     val selectedSiteHasTrustedNetwork: Boolean = false,
     val accessPoints: List<AccessPointUIModel> = emptyList(),
+    val thermostats: List<ResideoThermostatUIModel> = emptyList(),
     val loading: Boolean = true,
     val alertMessage: String = "",
     val shouldShowBottomSheet: Boolean = false,
