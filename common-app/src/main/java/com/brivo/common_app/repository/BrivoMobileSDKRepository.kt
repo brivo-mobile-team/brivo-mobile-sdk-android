@@ -9,6 +9,7 @@ import com.brivo.sdk.model.BrivoSDKApiState
 import com.brivo.sdk.onair.model.BrivoAuthenticateResponse
 import com.brivo.sdk.onair.model.BrivoOnairPass
 import com.brivo.sdk.onair.model.BrivoTokens
+import com.brivo.sdk.onair.model.resideo.ResideoThermostatResponse
 import kotlinx.coroutines.flow.Flow
 
 interface BrivoMobileSDKRepository {
@@ -61,6 +62,16 @@ interface BrivoMobileSDKRepository {
     ): BrivoSDKApiState<WalletEligibilityStatus>
 
     suspend fun refreshAllSDKs(passes: List<BrivoOnairPass>)
+
+    suspend fun getResideoThermostat(thermostatId: String): DomainState<ResideoThermostatResponse>
+
+    suspend fun setResideoThermostatSettings(
+        thermostatId: String,
+        mode: String,
+        fanMode: String?,
+        heatSetpoint: Float,
+        coolSetpoint: Float
+    ): DomainState<Unit>
 }
 
 

@@ -9,7 +9,8 @@ import com.brivo.common_app.features.devices.presentation.AccessPointsContent
 @Composable
 fun AccessPointsScreen(
     viewModel: AccessPointsViewModel = hiltViewModel(),
-    onAccessPointPressed: (String, String, String, String, String, Boolean) -> Unit
+    onAccessPointPressed: (String, String, String, String, String, Boolean) -> Unit,
+    onThermostatPressed: (String) -> Unit
 ) {
 
     val state by viewModel.state.collectAsState()
@@ -17,11 +18,9 @@ fun AccessPointsScreen(
     AccessPointsContent(
         state = state,
         onAccessPointPressed = { accessPointId, accessPointName, accessPointType ->
-            onAccessPointPressed(state.passId, accessPointId, state.siteId,accessPointName, accessPointType, state.selectedSiteHasTrustedNetwork)
+            onAccessPointPressed(state.passId, accessPointId, state.siteId, accessPointName, accessPointType, state.selectedSiteHasTrustedNetwork)
         },
-        onThermostatPressed = {
-            // should be handled in the future
-        },
+        onThermostatPressed = onThermostatPressed,
         onEvent = viewModel::onEvent,
     )
 }

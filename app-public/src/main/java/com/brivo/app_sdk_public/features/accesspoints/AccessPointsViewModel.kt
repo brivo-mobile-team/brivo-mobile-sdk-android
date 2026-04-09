@@ -9,6 +9,7 @@ import com.brivo.common_app.features.devices.model.AccessPointsUIEvent
 import com.brivo.common_app.features.devices.model.AccessPointsViewState
 import com.brivo.common_app.features.devices.model.SiteDetailsBottomSheetUIModel
 import com.brivo.common_app.features.devices.model.toAccessPointUIModel
+import com.brivo.common_app.features.devices.model.toResideoThermostatUIModel
 import com.brivo.common_app.model.DomainState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -80,6 +81,7 @@ class AccessPointsViewModel @Inject constructor(
                         _state.update {
                             it.copy(
                                 accessPoints = site.accessPoints.map { accessPoint -> accessPoint.toAccessPointUIModel() },
+                                thermostats  = site.thermostats.map { thermostat -> thermostat.toResideoThermostatUIModel() },
                                 siteName = site.siteName,
                                 siteId = site.id,
                                 selectedSiteHasTrustedNetwork = site.hasTrustedNetwork,

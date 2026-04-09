@@ -21,6 +21,8 @@ import com.brivo.app_sdk_public.features.unlockdoor.navigation.unlockDoorScreen
 import com.brivo.common_app.checkAndAskPermissions
 import com.brivo.app_sdk_public.features.accesspoints.navigation.accessPointsScreen
 import com.brivo.app_sdk_public.features.accesspoints.navigation.navigateAccessPointsScreen
+import com.brivo.app_sdk_public.features.thermostat.navigation.navigateThermostatScreen
+import com.brivo.app_sdk_public.features.thermostat.navigation.thermostatScreen
 
 const val HomeNavigationRoute = "home_route"
 
@@ -82,8 +84,12 @@ fun MainNavigation(
                             accessPointType = accessPointType,
                             hasTrustedNetwork = hasTrustedNetwork
                         )
+                    },
+                    onThermostatPressed = { thermostatId ->
+                        navController.navigateThermostatScreen(thermostatId)
                     }
                 )
+                thermostatScreen(onBackPressed = { navController.navigateUp() })
             }
         )
     }

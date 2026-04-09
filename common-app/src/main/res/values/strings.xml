@@ -57,4 +57,23 @@
     <string name="brivo_access_points_label">Access Points</string>
     <!--    Brivo Thermostats-->
     <string name="brivo_thermostats_label">Thermostats</string>
+
+    <!--    Thermostat screen-->
+    <string name="thermostat_back">Back</string>
+    <string name="thermostat_currently">Currently</string>
+    <string name="thermostat_mode">Mode</string>
+    <string name="thermostat_fan">Fan</string>
+    <string name="thermostat_heat_to">Heat to</string>
+    <string name="thermostat_cool_to">Cool to</string>
+    <string name="thermostat_low">Low</string>
+    <string name="thermostat_high">High</string>
+    <string name="thermostat_off_message">This thermostat is currently off.\nSwitch mode to begin use.</string>
+    <string name="thermostat_temperature_error">Failed to change temperature. Try again.</string>
+    <string name="thermostat_mode_off">Off</string>
+    <string name="thermostat_mode_heat">Heat</string>
+    <string name="thermostat_mode_cool">Cool</string>
+    <string name="thermostat_mode_auto">Auto</string>
+    <string name="thermostat_fan_auto">Auto</string>
+    <string name="thermostat_fan_on">On</string>
+    <string name="thermostat_fan_circulate">Circulate</string>
 </resources>
