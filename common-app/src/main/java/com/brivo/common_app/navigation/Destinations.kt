@@ -5,4 +5,5 @@ enum class Destinations(val route: String) {
     RedeemPass("redeem_pass"),
     AccessPoints("access_points"),
     UnlockDoor("unlock_door"),
+    ResideoThermostat("resideo_thermostat"),
 }

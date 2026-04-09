@@ -18,6 +18,8 @@ import com.brivo.sdk.model.configuration.BrivoConfiguration
 import com.brivo.sdk.onair.model.BrivoAuthenticateResponse
 import com.brivo.sdk.onair.model.BrivoOnairPass
 import com.brivo.sdk.onair.model.BrivoTokens
+import com.brivo.sdk.onair.model.resideo.ResideoThermostatResponse
+import com.brivo.sdk.onair.model.resideo.ResideoThermostatUpdateRequest
 import com.brivo.sdk.onair.repository.BrivoSDKOnair
 import com.brivo.sdk.enums.UnlockStrategy
 import kotlinx.coroutines.flow.Flow
@@ -196,4 +198,63 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
             activity = activity,
         )
     }
+
+    override suspend fun getResideoThermostat(
+        thermostatId: String
+    ): DomainState<ResideoThermostatResponse> {
+        val (tokens, thermostat) = findThermostatWithTokens(thermostatId)
+            ?: return DomainState.Failed("Thermostat $thermostatId not found in locally stored passes")
+
+        return when (val result = BrivoSDKOnair.instance.getResideoThermostat(
+            brivoTokens            = tokens,
+            ilAccountIntegrationId = thermostat.ilAccountIntegrationId,
+            deviceObjectId         = thermostat.id
+        )) {
+            is BrivoSDKApiState.Failed  -> DomainState.Failed(result.brivoError.message ?: "Failed to get thermostat")
+            is BrivoSDKApiState.Success -> DomainState.Success(result.data)
+        }
+    }
+
+    override suspend fun setResideoThermostatSettings(
+        thermostatId: String,
+        mode: String,
+        fanMode: String?,
+        heatSetpoint: Float,
+        coolSetpoint: Float
+    ): DomainState<Unit> {
+        val (tokens, thermostat) = findThermostatWithTokens(thermostatId)
+            ?: return DomainState.Failed("Thermostat $thermostatId not found in locally stored passes")
+
+        return when (val result = BrivoSDKOnair.instance.setResideoThermostatSettings(
+            brivoTokens            = tokens,
+            ilAccountIntegrationId = thermostat.ilAccountIntegrationId,
+            deviceObjectId         = thermostat.id,
+            request                = ResideoThermostatUpdateRequest(
+                mode         = mode,
+                fanMode      = fanMode ?: "",
+                heatSetpoint = heatSetpoint,
+                coolSetpoint = coolSetpoint
+            )
+        )) {
+            is BrivoSDKApiState.Failed  -> DomainState.Failed(result.brivoError.message ?: "Failed to set thermostat")
+            is BrivoSDKApiState.Success -> DomainState.Success(Unit)
+        }
+    }
+
+    private fun findThermostatWithTokens(thermostatId: String) =
+        try {
+            val passes = (BrivoSDKOnair.instance.retrieveSDKLocallyStoredPasses()
+                    as? BrivoSDKApiState.Success)?.data ?: return null
+
+            passes.values.firstNotNullOfOrNull { pass ->
+                pass.sites
+                    .flatMap { it.thermostats }
+                    .find { it.id.toString() == thermostatId }
+                    ?.let { thermostat ->
+                        pass.brivoOnairPassCredentials.tokens to thermostat
+                    }
+            }
+        } catch (e: Exception) {
+            null
+        }
 }
