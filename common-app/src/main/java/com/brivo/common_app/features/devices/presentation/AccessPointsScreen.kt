@@ -276,7 +276,7 @@ fun AccessPointRow(
             DoorType.INTERNET -> R.drawable.ic_net
             DoorType.ALLEGION, DoorType.ALLEGION_BLE -> R.drawable.ic_engage
             DoorType.WAVELYNX -> R.drawable.ic_brivo
-            DoorType.HID_ORIGO -> R.drawable.ic_hid
+            DoorType.HID_ORIGO, DoorType.HID_ORIGO_OMNIKEY -> R.drawable.ic_hid
             else -> null
         }
         if (drawable != null) {

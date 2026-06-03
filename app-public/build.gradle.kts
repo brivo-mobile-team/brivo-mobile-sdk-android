@@ -89,11 +89,11 @@ val brivoSdkVersion: String by rootProject.extra
 
 dependencies {
 
+
     if (checkGithubAccessToken(gitHubGradleAccessToken)) {
-        // Allegion SDK Module
-        implementation("com.allegion:MobileAccessSDK:5.0.1")
+        implementation("com.allegion:MobileAccessSDK:5.0.6")
+        implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoble-allegion:$brivoSdkVersion")
     }
-    implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoble-allegion:$brivoSdkVersion")
 
     implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoaccess:$brivoSdkVersion")
     implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoble:$brivoSdkVersion")
