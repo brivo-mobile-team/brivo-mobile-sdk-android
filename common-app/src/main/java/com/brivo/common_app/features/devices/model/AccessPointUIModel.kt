@@ -2,7 +2,6 @@ package com.brivo.common_app.features.devices.model
 
 import com.brivo.sdk.enums.DoorType
 import com.brivo.sdk.onair.model.BrivoAccessPoint
-import com.brivo.sdk.onair.model.ReaderType
 
 data class AccessPointUIModel(
     val id: String,
@@ -14,11 +13,7 @@ fun BrivoAccessPoint.toAccessPointUIModel() =
     AccessPointUIModel(
         id = this.id,
         accessPointName = this.name,
-        doorType = if (this.readerType == ReaderType.HID_ORIGO) {
-            DoorType.HID_ORIGO
-        } else {
-            this.doorType
-        }
+        doorType = this.doorType
     )
 
 
