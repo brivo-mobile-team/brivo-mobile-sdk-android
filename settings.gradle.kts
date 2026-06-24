@@ -14,7 +14,7 @@ dependencyResolutionManagement {
         maven("https://jitpack.io")
         maven {
             val gitHubGradleAccessToken:String? by settings
-            url = uri("https://raw.githubusercontent.com/Allegion-Plc/schlage-mobile-credential-android-sdk/master/releases")
+            url = uri("https://raw.githubusercontent.com/brivo-mobile-team/brivo-mobile-sdk-allegion-android/master/releases")
             credentials(HttpHeaderCredentials::class) {
                 name = "Authorization"
                 value = "Bearer $gitHubGradleAccessToken"

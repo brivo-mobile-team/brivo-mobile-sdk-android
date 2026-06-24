@@ -203,7 +203,7 @@ class UnlockDoorViewModel @Inject constructor(
                 }
 
                 AccessPointCommunicationState.FAILED -> {
-                    Log.d("Unlock result", "Failed")
+                    Log.d("Unlock result", "Failed, ${result.error}")
                     onUnlockFailed()
                 }
 
