@@ -19,6 +19,16 @@
     <string name="access_points">Access Points for %1$s</string>
     <string name="access_point_door_type">Door Type</string>
     <string name="access_points_empty">There are no Access Points for this site.</string>
+    <string name="magic_button_access_points_not_found">There are no devices found</string>
+    <string name="magic_button_ble_turned_off">Bluetooth turned off on device</string>
+    <string name="magic_button_no_devices">No devices nearby</string>
+    <string name="magic_button_unlocking">Unlocking…</string>
+    <string name="magic_button_unlock_device">Unlock %1$s</string>
+    <string name="magic_button_unlocking_device">Unlocking %1$s</string>
+    <string name="magic_button_unlocked_device">Unlocked %1$s</string>
+    <string name="magic_button_failed_to_unlock">Failed to unlock</string>
+    <string name="magic_button_no_pass_found">No pass found for device</string>
+    <string name="magic_button_default_device_name">Device</string>
     <string name="unlock_door_title">Unlock %1$s</string>
     <string name="unlock_door_with_magic_button_title">Unlock with Magic Button</string>
     <string name="unlock_door_button">Unlock Door</string>

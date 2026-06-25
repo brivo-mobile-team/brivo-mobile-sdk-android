@@ -50,12 +50,17 @@ dependencies {
     if (System.getenv("JITPACK") == null) {
         compileOnly("org.bitbucket.brivoinc.mobile-sdk-android:brivocore:${brivoSdkVersion}")
         compileOnly("org.bitbucket.brivoinc.mobile-sdk-android:brivoonair:${brivoSdkVersion}")
+        //FIXME Ble dependency should be removed once ble continous scanning feature is done
+        compileOnly(project(":brivoaccess"))
+        compileOnly("org.bitbucket.brivoinc.mobile-sdk-android:brivoaccess:${brivoSdkVersion}")
     } else {
         compileOnly(project(":brivocore"))
         compileOnly(project(":brivoonair"))
+        compileOnly(project(":brivoaccess"))
     }
 
     implementation("com.google.dagger:hilt-android:2.56.2")
+    debugImplementation("androidx.compose.ui:ui-tooling:1.9.2")
     ksp("com.google.dagger:hilt-compiler:2.56.2")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     ksp("androidx.hilt:hilt-compiler:1.2.0")
