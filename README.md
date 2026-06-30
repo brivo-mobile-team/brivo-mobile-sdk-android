@@ -22,13 +22,7 @@ dependencyResolutionManagement {
 }
 ```
 
-<b>Step 2</b>. Add the dependency for all Brivo modules
-
-```gradle
-dependencies {
-    implementation 'org.bitbucket.brivoinc:mobile-sdk-android:Tag'
-}
-```
+<b>Step 2</b>. 
 
 Add the dependency for the specific modules needed. This is an example of the core modules usually needed.
 ```gradle
