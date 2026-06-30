@@ -30,13 +30,15 @@ dependencies {
 }
 ```
 
-If you want specific modules then add any of the following dependencies
-
+Add the dependency for the specific modules needed. This is an example of the core modules usually needed.
 ```gradle
 dependencies {
      if (checkGithubAccessToken(gitHubGradleAccessToken)) {
-        implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoble-allegion:Tag") //This is an optional dependency module for use with Allegion BLE credentials which requires integrating their SDK
+     implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoble-allegion:Tag") //This is an optional dependency module for use with Allegion BLE credentials which requires integrating their SDK
+    // Allegion SDK Module
+    implementation("com.allegion:MobileAccessSDK:5.0.1") //This is the Allegion SDK Dependency required if you're using BrivoBLE-Allegion. In order to fetch it, you're required to receive a github access token from allegion and add it to your gradle.properties file
     }
+    
     implementation 'org.bitbucket.brivoinc.mobile-sdk-android:brivoaccess:Tag'
     implementation 'org.bitbucket.brivoinc.mobile-sdk-android:brivoble:Tag'
     implementation 'org.bitbucket.brivoinc.mobile-sdk-android:brivoblecore:Tag'
@@ -44,10 +46,8 @@ dependencies {
     implementation 'org.bitbucket.brivoinc.mobile-sdk-android:brivocore:Tag'
     implementation 'org.bitbucket.brivoinc.mobile-sdk-android:brivolocalauthentication:Tag'
     implementation 'org.bitbucket.brivoinc.mobile-sdk-android:brivoonair:Tag'
-    implementation 'org.bitbucket.brivoinc.mobile-sdk-android:brivosmarthome:Tag'
 
-    // Allegion SDK Module
-    implementation("com.allegion:MobileAccessSDK:5.0.1") //This is the Allegion SDK Dependency required if you're using BrivoBLE-Allegion. In order to fetch it, you're required to receive a github access token from allegion and add it to your gradle.properties file
+
 }
 ```
 
