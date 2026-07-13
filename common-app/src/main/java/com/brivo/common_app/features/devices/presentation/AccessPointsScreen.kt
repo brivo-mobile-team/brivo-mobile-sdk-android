@@ -396,20 +396,3 @@ fun ThermostatRow(
 //    }
 //}
 //
-//@ThemedPreview
-//@Composable
-//fun AccessPointsEmptyPreview() {
-//    val state = AccessPointsViewModel.AccessPointsViewState(
-//        passId = "",
-//        siteName = "siteName",
-//        loading = false,
-//        accessPoints = emptyList()
-//    )
-//    AppTheme {
-//        AccessPointsContent(
-//            onAccessPointPressed = { _, _ -> },
-//            onEvent = { },
-//            state = state
-//        )
-//    }
-//}

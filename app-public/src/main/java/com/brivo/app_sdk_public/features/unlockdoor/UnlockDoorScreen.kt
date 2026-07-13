@@ -62,8 +62,11 @@ fun UnlockDoorScreen(
         )
     }
 
-    if (state.alertMessage.isNotEmpty()) {
-        Toast.makeText(context, state.alertMessage, Toast.LENGTH_SHORT).show()
+    LaunchedEffect(state.alertMessage) {
+        if (state.alertMessage.isNotEmpty()) {
+            Toast.makeText(context, state.alertMessage, Toast.LENGTH_SHORT).show()
+            viewModel.onEvent(UnlockDoorUIEvent.UpdateAlertMessage(""))
+        }
     }
 
     Scaffold(
@@ -74,24 +77,26 @@ fun UnlockDoorScreen(
                         textAlign = TextAlign.Center,
                         text = if (state.accessPointName.isNotEmpty())
                             stringResource(id = R.string.unlock_door_title, state.accessPointName)
-                        else stringResource(id = R.string.unlock_door_with_magic_button_title),
+                        else stringResource(id = R.string.unlock_nearest_access_point_title),
                         style = MaterialTheme.typography.headlineSmall
                     )
                 }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    viewModel.updateShouldShowBottomSheet(true)
-                },
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Info,
-                    contentDescription = "Access Point Details"
-                )
+            if (!state.isNearestAccessPoint) {
+                FloatingActionButton(
+                    onClick = {
+                        viewModel.updateShouldShowBottomSheet(true)
+                    },
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Info,
+                        contentDescription = "Access Point Details"
+                    )
+                }
             }
         },
     ) { padding ->

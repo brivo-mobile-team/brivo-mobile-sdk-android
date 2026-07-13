@@ -10,7 +10,8 @@
     <string name="redeem_pass_submit">Submit</string>
     <string name="redeem_pass_success">Mobile Pass Successfully Redeemed</string>
     <string name="home_sites_empty">You have no Mobile Passes. Add passes by tapping the + button.</string>
-    <string name="home_magic_button">Magic Button</string>
+    <string name="home_continuous_scanner">Continuous Scanner</string>
+    <string name="home_unlock_nearest_access_point">Unlock Nearest Access Point</string>
     <string name="home_pass_id">Pass Id: %1$s</string>
     <string name="home_pass_account_id">Account Id: %1$s</string>
     <string name="home_pass_account_name">Account Name: %1$s</string>
@@ -20,7 +21,7 @@
     <string name="access_point_door_type">Door Type</string>
     <string name="access_points_empty">There are no Access Points for this site.</string>
     <string name="unlock_door_title">Unlock %1$s</string>
-    <string name="unlock_door_with_magic_button_title">Unlock with Magic Button</string>
+    <string name="unlock_nearest_access_point_title">Unlock Nearest Access Point</string>
     <string name="unlock_door_button">Unlock Door</string>
     <string name="unlock_door_success">Unlock Door Success</string>
     <string name="unlock_door_failed">Unlock Door Failed</string>

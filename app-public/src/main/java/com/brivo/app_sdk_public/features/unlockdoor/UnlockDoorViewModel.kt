@@ -47,7 +47,7 @@ class UnlockDoorViewModel @Inject constructor(
             accessPointType = DoorType.valueOf(unlockDoorArgs.accessPointType.ifEmpty {
                 DoorType.UNKNOWN.name
             }),
-            isMagicButton = unlockDoorArgs.passId == "",
+            isNearestAccessPoint = unlockDoorArgs.passId == "",
             hasTrustedNetwork = unlockDoorArgs.hasTrustedNetwork
         )
     )
@@ -57,7 +57,9 @@ class UnlockDoorViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            updateDoorDetailsBootmSheet()
+            if (unlockDoorArgs.passId.isNotEmpty()) {
+                updateDoorDetailsBootmSheet()
+            }
         }
     }
 
@@ -76,7 +78,7 @@ class UnlockDoorViewModel @Inject constructor(
             is UnlockDoorUIEvent.UnlockDoor -> {
                 viewModelScope.launch {
                     if (unlockDoorArgs.passId.isEmpty()) {
-                        unlockDoorWithMagicButton(activity = event.activity)
+                        unlockWithNearestAccessPoint(activity = event.activity)
                     } else {
                         unlockDoor(activity = event.activity)
                     }
@@ -162,7 +164,7 @@ class UnlockDoorViewModel @Inject constructor(
         }
     }
 
-    private fun unlockDoorWithMagicButton(activity: FragmentActivity) {
+    private fun unlockWithNearestAccessPoint(activity: FragmentActivity) {
         viewModelScope.launch {
             updateDoorState(DoorState.UNLOCKING)
             unlockNearestBLEAccessPointUseCase.execute(
@@ -203,14 +205,14 @@ class UnlockDoorViewModel @Inject constructor(
                 }
 
                 AccessPointCommunicationState.FAILED -> {
-                    Log.d("Unlock result", "Failed, ${result.error}")
+                    Log.d("Unlock result", result?.error?.message ?: "Failed")
                     onUnlockFailed()
                 }
 
-                AccessPointCommunicationState.SHOULD_CONTINUE,
                 AccessPointCommunicationState.SCANNING, AccessPointCommunicationState.AUTHENTICATE,
                 AccessPointCommunicationState.CONNECTING, AccessPointCommunicationState.COMMUNICATING,
-                AccessPointCommunicationState.ON_CLOSEST_READER -> {
+                AccessPointCommunicationState.ON_CLOSEST_READER,
+                AccessPointCommunicationState.SHOULD_CONTINUE -> {
                     Log.d("Unlock door state", result.communicationState.name)
                 }
 
@@ -296,7 +298,7 @@ class UnlockDoorViewModel @Inject constructor(
 }
 
 data class UnlockDoorViewState(
-    val isMagicButton: Boolean = false,
+    val isNearestAccessPoint: Boolean = false,
     val showSnackbar: Boolean = false,
     val doorState: DoorState = DoorState.LOCKED,
     val accessPointName: String = "",

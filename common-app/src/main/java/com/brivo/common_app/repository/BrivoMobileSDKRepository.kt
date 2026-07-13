@@ -2,6 +2,7 @@ package com.brivo.common_app.repository
 
 import androidx.fragment.app.FragmentActivity
 import com.brivo.common_app.model.DomainState
+import com.brivo.sdk.access.continuousscanning.ContinuousScanningResults
 import com.brivo.sdk.enums.ServerRegion
 import com.brivo.sdk.enums.UnlockStrategy
 import com.brivo.sdk.model.BrivoResult
@@ -61,7 +62,11 @@ interface BrivoMobileSDKRepository {
         forced: Boolean
     ): BrivoSDKApiState<WalletEligibilityStatus>
 
-    suspend fun refreshAllSDKs(passes: List<BrivoOnairPass>)
+    fun startScanForNearbyDevices(
+        passes: List<BrivoOnairPass>
+    ) : Flow<ContinuousScanningResults>
+
+    suspend fun refreshAllSDKs(passes: List<BrivoOnairPass>): BrivoSDKApiState<Unit>
 
     suspend fun getResideoThermostat(thermostatId: String): DomainState<ResideoThermostatResponse>
 
