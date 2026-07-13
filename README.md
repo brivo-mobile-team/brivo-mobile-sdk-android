@@ -1,823 +1,708 @@
 [![](https://jitpack.io/v/org.bitbucket.brivoinc/mobile-sdk-android.svg)](https://jitpack.io/#org.bitbucket.brivoinc/mobile-sdk-android)
 
-# Brivo Mobile SDK Android
+# Brivo Mobile SDK for Android
 
-A set of reusable libraries, services and components for Java and Kotlin Android apps.
+The Brivo Mobile SDK lets your Android app turn a user's phone into a mobile credential: redeem and manage mobile passes, unlock Brivo doors over Bluetooth (BLE) or the internet, and handle two-factor (biometric) prompts — all through a small, coroutine-friendly public surface. This guide targets external integrators building against SDK **v3.4.0**.
 
-### Installation
+> [!NOTE]
+> Additional third-party lock integrations are available from Brivo. This document covers the Brivo core flows only.
 
-Brivo Mobile SDK requires at minimun Android API 29+.
+## Table of contents
 
-#### Jitpack ❤️
+1. [Overview](#1-overview)
+2. [Requirements & compatibility](#2-requirements--compatibility)
+3. [Installation (JitPack)](#3-installation-jitpack)
+4. [Initialization & configuration](#4-initialization--configuration)
+5. [Permissions](#5-permissions)
+6. [Managing mobile passes](#6-managing-mobile-passes)
+7. [Using the SDK without SDK storage](#7-using-the-sdk-without-sdk-storage)
+8. [Unlocking doors](#8-unlocking-doors)
+9. [Error reference](#9-error-reference)
+10. [Keeping up to date & good practices](#10-keeping-up-to-date--good-practices)
 
-<b>Step 1</b>. Add the JitPack repository to your build file
+---
 
-```gradle
+## 1. Overview
+
+The SDK is delivered as a set of cooperating modules, all under the `com.brivo.sdk` group:
+
+| Module | Responsibility |
+| --- | --- |
+| `brivocore` | SDK entry point, configuration, shared models, version & device id, networking, logging. |
+| `brivoonair` | Mobile passes and Brivo cloud API (redeem, refresh, token refresh, SDK storage). |
+| `brivoaccess` | Door-unlock orchestration and nearby-device ("Magic Button") scanning. |
+| `brivoble` / `brivoble-core` | Brivo BLE transport for Bluetooth unlocks. |
+| `brivolocalauthentication` | Biometric / device-credential authentication for two-factor unlocks. |
+
+The single entry point is the Kotlin object `BrivoSDK`. You initialize it once with a `BrivoConfiguration`, then drive everything else through a few objects:
+
+- `BrivoSDKOnair` — passes and tokens.
+- `BrivoSDKAccess` — unlocking and nearby-device scanning.
+- `BrivoSDKLocalAuthentication` — biometric prompts for two-factor.
+
+Asynchronous style:
+
+- One-shot / network calls return a sealed `BrivoSDKApiState<T>` (`Success(data)` or `Failed(brivoError: BrivoError)`).
+- Unlock and scan operations return a Kotlin `Flow<…>` that you collect.
+
+---
+
+## 2. Requirements & compatibility
+
+| Item | Value |
+| --- | --- |
+| Min API level | **API 29** for the core modules (`brivocore`, `brivoonair`, `brivoaccess`, `brivoble`, `brivoble-core`, `brivolocalauthentication`). |
+| Build JDK | **JDK 17** (the SDK is built and published with the JDK 17 toolchain). |
+| Language | Kotlin, coroutines/`Flow`-based. |
+| SDK version | **3.4.0** (see `BrivoSDK.version` below). |
+
+> [!NOTE]
+> `BrivoSDK.version` returns the string **`"v3.4.0"`** — note the leading `v` prefix.
+
+```kotlin
+val version: String = BrivoSDK.version          // "v3.4.0"
+val deviceId: String = BrivoSDK.getDeviceId()   // stable per-install UUID (hyphens stripped)
+```
+
+`getDeviceId()` returns a UUID (with hyphens removed) that is generated once on first call and persisted in the SDK's `SharedPreferences`, so it is stable across launches for the install.
+
+---
+
+## 3. Installation (JitPack)
+
+The SDK is published via JitPack. Add the JitPack repository to your `settings.gradle.kts`:
+
+```kotlin
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-        repositories {
+    repositories {
+        google()
         mavenCentral()
-        maven { url 'https://jitpack.io' }
+        maven { url = uri("https://jitpack.io") }
     }
 }
 ```
 
-<b>Step 2</b>. 
+Then add the dependency. You can pull every desired module individually.
+These are the required ones:
 
-Add the dependency for the specific modules needed. This is an example of the core modules usually needed.
-```gradle
+```kotlin
 dependencies {
-     if (checkGithubAccessToken(gitHubGradleAccessToken)) {
-     implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoble-allegion:Tag") //This is an optional dependency module for use with Allegion BLE credentials which requires integrating their SDK
-    // Allegion SDK Module
-    implementation("com.allegion:MobileAccessSDK:5.0.1") //This is the Allegion SDK Dependency required if you're using BrivoBLE-Allegion. In order to fetch it, you're required to receive a github access token from allegion and add it to your gradle.properties file
-    }
-    
-    implementation 'org.bitbucket.brivoinc.mobile-sdk-android:brivoaccess:Tag'
-    implementation 'org.bitbucket.brivoinc.mobile-sdk-android:brivoble:Tag'
-    implementation 'org.bitbucket.brivoinc.mobile-sdk-android:brivoblecore:Tag'
-    implementation 'org.bitbucket.brivoinc.mobile-sdk-android:brivoconfiguration:Tag'
-    implementation 'org.bitbucket.brivoinc.mobile-sdk-android:brivocore:Tag'
-    implementation 'org.bitbucket.brivoinc.mobile-sdk-android:brivolocalauthentication:Tag'
-    implementation 'org.bitbucket.brivoinc.mobile-sdk-android:brivoonair:Tag'
-
-
+    // Each module separate (Tag = the release tag, e.g. 3.4.0):
+    implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoaccess:tag")
+    implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoble:tag")
+    implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoblecore:tag")
+    implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivocore:tag")
+    implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivolocalauthentication:tag")
+    implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoonair:tag")
 }
 ```
 
-```gradle.properties option for BrivoBLe-Allegion use
-    gitHubGradleAccessToken = Github_Access_Key //Provided by Allegion
+Per-module coordinates (in-scope modules) follow the published group `com.brivo.sdk`:
+
+| Module | Artifact id |
+| --- | --- |
+| Core | `brivocore` |
+| Passes / cloud | `brivoonair` |
+| Access / unlock | `brivoaccess` |
+| BLE | `brivoble` |
+| BLE core | `brivoble-core` (note the hyphen — **not** `brivoblecore`) |
+| Local authentication | `brivolocalauthentication` |
+
+> [!NOTE]
+> The exact JitPack coordinate form (group/artifact mapping for per-module dependencies and the release `Tag`) should be **confirmed with Brivo** for your distribution.
+
+---
+
+## 4. Initialization & configuration
+
+Initialize the SDK once, as early as possible — typically in your `Application.onCreate()` — using the application context. `BrivoSDK.init(...)` throws `BrivoSDKInitializationException` if the `clientId` or `clientSecret` is empty. Your client credentials are issued by Brivo and are region-specific.
+
+```kotlin
+class App : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        try {
+            BrivoSDK.init(
+                context = applicationContext,
+                brivoConfiguration = BrivoConfiguration.builder(
+                    clientId = BuildConfig.BRIVO_CLIENT_ID,
+                    clientSecret = BuildConfig.BRIVO_CLIENT_SECRET,
+                    useSDKStorage = true,
+                )
+                    .serverRegion(ServerRegion.UNITED_STATES)   // default; use EUROPE for EU
+                    .build()
+            )
+        } catch (e: BrivoSDKInitializationException) {
+            // Missing/empty clientId or clientSecret — surface to your crash reporting.
+        }
+    }
+}
 ```
 
-<b>Step 3</b> Add the following permissions to your app's manifest
+### Configuration options
+
+`BrivoConfiguration.builder(clientId, clientSecret, useSDKStorage)` returns a `Builder`. The available options:
+
+| Builder method | Type / default | Purpose |
+| --- | --- | --- |
+| `serverRegion(region)` | `ServerRegion`, default `UNITED_STATES` | Selects the Brivo region. `ServerRegion` has `UNITED_STATES` and `EUROPE`. Your credentials must match the chosen region. |
+| `authUrl(url)` | `String`, optional | Override the authentication endpoint (defaults are derived from `serverRegion`). |
+| `apiUrl(url)` | `String`, optional | Override the API endpoint (defaults are derived from `serverRegion`). |
+| `onTokenRefresh(fn)` | `suspend (clientId: String, clientSecret: String) -> String?`, optional | App-supplied callback the SDK invokes when it needs a fresh token. REQUIRED FOR SDK STORAGE OFF |
+| `bleScanTimeout(duration)` | `Duration`, default `10s` | Timeout for BLE scanning. Must be `> 0`. |
+| `bleUnlockTimeout(duration)` | `Duration`, default `10s` | Timeout for a BLE unlock attempt. Must be `> 0`. |
+| `build()` | — | Produces the `BrivoConfiguration`. |
+
+`useSDKStorage` (the third positional argument to `builder(...)`) decides whether the SDK persists redeemed passes and credentials for you:
+
+- **`useSDKStorage = true`** — the SDK stores redeemed passes (and their credentials) in its own `SharedPreferences`-backed storage. You can then use the id-based unlock variants and retrieve passes from storage without supplying credentials per call.
+- **`useSDKStorage = false`** — your app owns all pass data; you supply it on each operation, and are required to handle and store the tokens. See [Using the SDK without SDK storage](#7-using-the-sdk-without-sdk-storage).
+
+> [!NOTE]
+> **Running the bundled sample apps:** add your `clientId` and `clientSecret` to the appropriate variables in `gradle.properties`. Otherwise the sample app throws an `IllegalArgumentException` ("Please add your client Id and client Secret inside gradle.properties file") and closes on launch.
+
+---
+
+## 5. Permissions
+
+> [!WARNING]
+> The SDK **does not request runtime permissions or declare manifest permissions on your behalf.** The host app must declare the manifest permissions and request the runtime permissions itself. When a permission is missing or Bluetooth/location is disabled, the SDK surfaces it through error codes (see [Error reference](#9-error-reference)) and through `ContinuousScanningState.WaitingForBluetooth` during scanning — it never prompts the user.
+
+### Manifest declarations
+
+Declare the following in your app's `AndroidManifest.xml` (superset covering BLE unlock and trusted-network detection):
 
 ```xml
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+<uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+<uses-permission android:name="android.permission.VIBRATE" />
+<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
-<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /><uses-permission
-android:name="android.permission.INTERNET" /><uses-permission
-android:name="android.permission.VIBRATE" /><uses-permission
-android:name="android.permission.RECEIVE_BOOT_COMPLETED" /><uses-permission
-android:name="android.permission.ACCESS_COARSE_LOCATION" /><uses-permission
-android:name="android.permission.ACCESS_FINE_LOCATION" /><uses-permission
-android:name="android.permission.ACCESS_WIFI_STATE" /><uses-permission
-android:name="android.permission.BLUETOOTH_ADMIN" /><uses-permission
-android:name="android.permission.BLUETOOTH" /><uses-permission
-android:name="android.permission.CHANGE_WIFI_STATE" /><uses-permission
-android:name="android.permission.FOREGROUND_SERVICE" /><uses-permission
-android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /><uses-permission
-android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /><uses-permission
-android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" /><uses-permission
-android:name="android.permission.BLUETOOTH_SCAN" tools:targetApi="s" /><uses-permission
-android:name="android.permission.BLUETOOTH_CONNECT" />
+<!-- Location (required for trusted-network / Wi-Fi SSID detection and pre-31 BLE scan) -->
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
+<!-- Bluetooth -->
+<uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+<uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+    android:usesPermissionFlags="neverForLocation"
+    tools:targetApi="s"/>
+<uses-permission android:name="android.permission.BLUETOOTH_CONNECT" tools:targetApi="s" />
+<uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" tools:targetApi="s" />
+
+<!-- Biometric / two-factor -->
+<uses-permission android:name="android.permission.USE_BIOMETRIC" />
 ```
 
-### Usage
+### Runtime permissions
 
-To initialize the Brivo Mobile SDK call the initialize method with the application context and with
-the BrivoConfiguration object.
-The BrivoConfiguration object requires the clientId and secretId which is provided by Brivo.
-These need to be specified in accordance with the selected `useEURegion` boolean passed to the
-configuration object.
+Request the runtime permissions yourself before any BLE unlock or scan:
 
-```kotlin
-/**
- * Initializes the BrivoSDK
- *
- * @param context            application context used to initialize SDK data into the application local storage
- * @param brivoConfiguration Brivo client id
- *                           Brivo client secret
- *                           Brivo SDK local storage management enabled
- *                           Brivo SDK should verify door before connecting to it
- */
-void init (Context context, BrivoConfiguration brivoConfiguration) throws BrivoSDKInitializationException;
-```
+- **API 31+ (Android 12+):** `BLUETOOTH_SCAN` and `BLUETOOTH_CONNECT`.
+- **Pre-31 (Android 11 and below):** location (`ACCESS_FINE_LOCATION` / `ACCESS_COARSE_LOCATION`) is required for BLE scanning.
 
-### BrivoSDK init usage
+Bluetooth must also be **enabled** on the device. If it is off during a scan, the SDK emits `ContinuousScanningState.WaitingForBluetooth`.
 
-Example of a function initialising the SDK
+> [!WARNING]
+> Location permission is also required for **trusted-network detection** — the SDK reads the connected Wi-Fi SSID to decide whether a "trusted network" applies, and Android gates SSID access behind location permission. Without it you'll see `ONAIR_TRUSTED_NETWORK_LOCATION_PERMISSION_NOT_GRANTED` (-3010).
+
+---
+
+## 6. Managing mobile passes
+
+A **mobile pass** (`BrivoOnairPass`) lets a user open doors with their phone. It aggregates the user's identity, the BLE credential, and the `sites → accessPoints` the holder is allowed to open, plus flags indicating which credential types the pass carries. Access the pass API through `BrivoSDKOnair.instance`.
+
+### Redeem a pass
 
 ```kotlin
-fun initBrivoSDK(isEURegion: Boolean) {
-    try {
-        BrivoSDK.init(
-            context = yourApplicationContext,
-            brivoConfiguration = BrivoConfiguration(
-                clientId = if (isEURegion) EU_CLIENT_ID else US_CLIENT_ID,
-                clientSecret = if (isEURegion) EU_CLIENT_SECRET else US_CLIENT_SECRET,
-                useEURegion = isEURegion,
-                useSDKStorage = true,
-                shouldVerifyDoor = false
-            )
-        )
-    } catch (e: BrivoSDKInitializationException) {
-        // Handle exceptions
-    }
-}
-```
-
-The exception is thrown if the SDK is not initialized correctly.
-For example one of the parameters is null or missing.
-
-### Brivo Sample app usage
-
-For sample app usage, please add your client Id and client Secret inside the gradle.properties file,
-in their appropriate variable.
-Otherwise the sample app will throw an `IllegalArgumentException` with the message "Please add your
-client Id and client Secret inside gradle.properties file" and it will then close.
-
-### Brivo Mobile SDK Modules
-
-#### BrivoCore
-
-Initializes the BrivoSDK (see example above).
-This module also contains the version variable which returns the SDK version.
-
-```kotlin
-val version: String
-```
-
-```kotlin
-BrivoSDK.version
-```
-
-#### BrivoOnAir
-
-This module manages the connection between the SDK and the Brivo environment.
-Redeem a Brivo Onair Pass. Brivo Onair Pass allows you to open doors with your smartphone.
-
-##### BrivoSDKOnair Redeem Pass
-
-```kotlin
-/**
- * Redeem a Brivo Onair Pass. Brivo Onair Pass allows you to open doors with your smartphone.
- *
- * @param email    Email received from Brivo
- * @param token    Token received from Brivo
- */
-suspend fun redeemPass(passId: String, passCode: String): BrivoSDKApiState<BrivoOnairPass?>
-```
-
-```kotlin
-try {
-    val response = BrivoSDKOnair.redeemPass(email, token)
-    when (response) {
-        is BrivoSDKApiState.Success -> {
-            // Handle success
-        }
-        is BrivoSDKApiState.Failed -> {
-            // Handle failure
-        }
-    }
-} catch (e: BrivoSDKInitializationException) {
-    // Handle BrivoSDK initialization exception
-}
-```
-
-##### BrivoSDKOnair Refresh a Brivo Onair Pass
-
-```kotlin
-/**
- * Refresh a Brivo Onair Pass. Brivo Onair Pass allows you to open doors with your smartphone.
- *
- * @param brivoTokens accessToken received from Brivo
- *                    refreshToken received from Brivo
- */
-suspend fun refreshPass(brivoTokens: BrivoTokens): BrivoSDKApiState<BrivoOnairPass?>
-```
-
-```kotlin
-try {
-    val response = BrivoSDKOnair.refreshPass(tokens)
-    when (response) {
-        is BrivoSDKApiState.Success -> {
-            // Handle success
-        }
-        is BrivoSDKApiState.Failed -> {
-            // Handle failure
-        }
-    }
-} catch (e: BrivoSDKInitializationException) {
-    e.printStackTrace()
-}
-```
-
-##### Retrieve SDK locally stored passes
-
-```kotlin
-/**
- * Retrieved SDK locally stored passes
- */
-fun retrieveSDKLocallyStoredPasses(): BrivoSDKApiState<LinkedHashMap<String, BrivoOnairPass>>
-```
-
-```kotlin
-try {
-    val response = BrivoSDKOnair.retrieveSDKLocallyStoredPasses()
-    when (response) {
-        is BrivoSDKApiState.Success -> {
-            // Handle success
-        }
-        is BrivoSDKApiState.Failed -> {
-            // Handle failure
-        }
-    }
-} catch (e: BrivoSDKInitializationException) {
-    e.printStackTrace()
-}
-```
-
-#### BrivoAccess
-
-This module handles unlocking of access points internally.
-It determines what authentication type is required (BLE or NETWORK).
-
-##### BrivoSDKAccess Unlock Access Point
-
-```kotlin
-    /**
- * Sends a request to unlock an access point to BrivoSDK
- *
- * @param accessPointId      Brivo accessPointId
- * @param passId             Brivo passId
- * @param shouldContinueUnlockOperation Optional event to prompt the user to perform an action
- * before continuing with the unlock operation
- * @return Flow<BrivoResult> Return a flow that emits the status of the unlock operation
- */
-fun unlockAccessPoint(
-    passId: String,
-    accessPointId: String,
-    activity: FragmentActivity? = null,
-    shouldContinueUnlockOperation: ShouldContinueUnlockOperation? = null
-): Flow<BrivoResult>
-```
-
-```kotlin
-try {
-    BrivoSDKAccess.unlockAccessPoint(
-        passId,
-        accessPointId,
-        cancellationSignal
-    ).collect {
-        when (it.communicationState) {
-            AccessPointCommunicationState.SUCCESS -> {
-                // Handle success
-            }
-            AccessPointCommunicationState.FAILED -> {
-                // Handle failure
-            }
-            AccessPointCommunicationState.SHOULD_CONTINUE -> {
-                // Handle custom action and afterwards perform shouldContinue
-                // If shouldContinueUnlockOperation is null, this can be ignored
-                // it.shouldContinueListener?.onShouldContinue(true)
-            }
-            AccessPointCommunicationState.SCANNING -> {
-                // Represresents the scanning state
-            }
-            AccessPointCommunicationState.AUTHENTICATE -> {
-                // Respresents the authenticating state when two factor authentication is required
-            }
-            AccessPointCommunicationState.CONNECTING -> {
-                // Respresents the connecting state
-            }
-            AccessPointCommunicationState.COMMUNICATING -> {
-                // Respresent the communicating state
-            }
-            AccessPointCommunicationState.SCANNING_COOLDOWN -> {
-                //scanning cooldown state, 
-                // This is triggered if there is an attempt to perform more than 5 scans in a 30 second window
-                
-            }
-        }
-    }
-} catch (e: BrivoSDKInitializationException) {
-    // Handle BrivoSDK initialization exception
-}
-```
-
-##### BrivoSDKAccess Unlock Access Point with External Credentials
-
-This method is called when credentials and data are managed outside of BrivoSDK.
-
-```kotlin
-    /**
- * Sends a request to unlock an access point to BrivoSDK
- * All credentials and data are managed outside of BrivoSDK
- *
- * @param brivoSelectedAccessPoint Brivo accessPointPath (accessPointId, siteId, passId)
- *                                 Brivo bleReaderId
- *                                 Brivo bleCredentials
- *                                 Brivo deviceModelId
- *                                 Brivo doorType
- *                                 Brivo minimumAllowedRssi
- *                                 Unlock attempt time frame
- *                                 BrivoOnairPassCredentials (userId, accessToken, refreshToken)
- * @param activity Optional Activity to create the 2FA prompt inside the specifie activity
- * instead of the SDK
- * @param shouldContinueUnlockOperation Optional event to prompt the user to perform an action
- * before continuing with the unlock operation
- * @return Flow<BrivoResult> Returns a flow that emits the status of the unlock operation
- */
-fun unlockAccessPoint(
-    brivoSelectedAccessPoint: BrivoSelectedAccessPoint,
-    activity: FragmentActivity? = null,
-    shouldContinueUnlockOperation: ShouldContinueUnlockOperation? = null
-): Flow<BrivoResult>
-```
-
-```kotlin
-try {
-    BrivoSDKAccess.getInstance().unlockAccessPoint(
-        selectedAccessPoint,
-        cancellationSignal
-    ).collect {
-        when (it.communicationState) {
-            AccessPointCommunicationState.SUCCESS -> {
-                // Handle success
-            }
-            AccessPointCommunicationState.FAILED -> {
-                // Handle failure
-            }
-            AccessPointCommunicationState.SHOULD_CONTINUE -> {
-                // Handle custom action and afterwards perform shouldContinue
-                // If shouldContinueUnlockOperation is null, this can be ignored
-                // it.shouldContinueListener?.onShouldContinue(true)
-            }
-            AccessPointCommunicationState.SCANNING -> {
-                // Represresents the scanning state
-            }
-            AccessPointCommunicationState.AUTHENTICATE -> {
-                // Respresents the authenticating state when two factor authentication is required
-            }
-            AccessPointCommunicationState.CONNECTING -> {
-                // Respresents the connecting state
-            }
-            AccessPointCommunicationState.COMMUNICATING -> {
-                // Respresent the communicating state
-            }
-            AccessPointCommunicationState.SCANNING_COOLDOWN -> {
-                //scanning cooldown state, 
-                // This is triggered if there is an attempt to perform more than 5 scans in a 30 second window
-            }
-        }
-    }
-} catch (e: BrivoSDKInitializationException) {
-    // Handle BrivoSDK initialization exception
-}
-```
-
-##### BrivoSDKAccess Unlock Nearest BLE Access Point using External Credentials
-
-```kotlin
-    /**
- * Sends a request to unlock the nearest BLE access point to BrivoSDK
- * All credentials and data are managed outside of BrivoSDK
- *
- * @param passes                   Passes needed to unlock nearest bluetooth that is in range
- * @param shouldContinueUnlockOperation Optional event to prompt the user to perform an action before continuing with the unlock operation
- * @return Flow<BrivoResult> Returns a flow that emits the status of the unlock operation
- */
-fun unlockNearestBLEAccessPoint(
-    passes: List<BrivoOnairPass>,
-    activity: FragmentActivity? = null,
-    shouldContinueUnlockOperation: ShouldContinueUnlockOperation? = null
-): Flow<BrivoResult>
-```
-
-```kotlin
-try {
-    BrivoSDKAccess.getInstance().unlockNearestBLEAccessPoint(
-        passes,
-        cancellationSignal
-    ).collect {
-        when (it.communicationState) {
-            AccessPointCommunicationState.SUCCESS -> {
-                // Handle success
-            }
-            AccessPointCommunicationState.FAILED -> {
-                // Handle failure
-            }
-            AccessPointCommunicationState.SHOULD_CONTINUE -> {
-                // Handle custom action and afterwards perform shouldContinue
-                // If shouldContinueUnlockOperation is null, this can be ignored
-                // it.shouldContinueListener?.onShouldContinue(true)
-            }
-            AccessPointCommunicationState.SCANNING -> {
-                // Represresents the scanning state
-            }
-            AccessPointCommunicationState.AUTHENTICATE -> {
-                // Respresents the authenticating state when two factor authentication is required
-            }
-            AccessPointCommunicationState.CONNECTING -> {
-                // Respresents the connecting state
-            }
-            AccessPointCommunicationState.COMMUNICATING -> {
-                // Respresent the communicating state
-            }
-            AccessPointCommunicationState.SCANNING_COOLDOWN -> {
-                //scanning cooldown state, 
-                // This is triggered if there is an attempt to perform more than 5 scans in a 30 second window
-
-            }
-        }
-    }
-} catch (e: BrivoSDKInitializationException) {
-    // Handle BrivoSDK initialization exception
-}
-```
-
-##### BrivoSDKAccess unlock nearest BLE access point
-
-```kotlin
-    /**
- * Sends a request to unlock the nearest BLE access point to BrivoSDK
- * All credentials and data are managed by BrivoSDK
- * @param activity Optional Activity to create the 2FA prompt inside the specifie activity
- * instead of the SDK
- * @param shouldContinueUnlockOperation Optional event to prompt the user to perform an action
- * before continuing with the unlock operation
- * @return Flow<BrivoResult> Returns a flow that emits the status of the unlock operation
- **/
-void unlockNearestBLEAccessPoint (CancellationSignal cancellationSignal, IOnCommunicateWithAccessPointListenerListener listener)
-
-```
-
-```kotlin
-try {
-    BrivoSDKAccess.getInstance().unlockNearestBLEAccessPoint(
-        cancellationSignal,
-        cancellationSignal
-    ).collect {
-        when (it.communicationState) {
-            AccessPointCommunicationState.SUCCESS -> {
-                // Handle success
-            }
-            AccessPointCommunicationState.FAILED -> {
-                // Handle failure
-            }
-            AccessPointCommunicationState.SHOULD_CONTINUE -> {
-                // Handle custom action and afterwards perform shouldContinue
-                // If shouldContinueUnlockOperation is null, this can be ignored
-                // it.shouldContinueListener?.onShouldContinue(true)
-            }
-            AccessPointCommunicationState.SCANNING -> {
-                // Represresents the scanning state
-            }
-            AccessPointCommunicationState.AUTHENTICATE -> {
-                // Respresents the authenticating state when two factor authentication is required
-            }
-            AccessPointCommunicationState.CONNECTING -> {
-                // Respresents the connecting state
-            }
-            AccessPointCommunicationState.COMMUNICATING -> {
-                // Respresent the communicating state
-            }
-            AccessPointCommunicationState.SCANNING_COOLDOWN -> {
-                //scanning cooldown state, 
-                // This is triggered if there is an attempt to perform more than 5 scans in a 30 second window
-
-            }
-        }
-    } catch (e: BrivoSDKInitializationException) {
-        // Handle BrivoSDK initialization exception
-    }
-```
-
-#### BrivoBLE
-
-This module manages the connection between an access point and a panel through bluetooth
-
-#### BrivoSDKBleAllegion
-
-This module handles unlocking of allegion doors offline.
-
-```kotlin
-
-/**
- * Initializes the BrivoSDKBLEAllegion module
- *
- * @throws BrivoSDKInitializationException if initialization fails
- */
-@Throws(BrivoSDKInitializationException::class)
-fun init()
-
-try {
-    BrivoSDKBLEAllegion.init()
-} catch (exception: BrivoSDKInitializationException) {
-    exception.printStackTrace()
-}
-/**
- * Refreshes the credentials for Allegion doors
- *
- * @param pass the BrivoOnairPass object
- * @return BrivoSDKApiState indicating success or failure
- */
-fun refreshCredentials(pass: BrivoOnairPass): BrivoSDKApiState
-
-when (val result = BrivoSDKBLEAllegion.getInstance().refreshCredentials(pass)) {
-    is BrivoSDKApiState.Failed -> {
-        BrivoApiState.Failed(result.brivoError)
-    }
-
+val result = BrivoSDKOnair.instance.redeemPass(passId = "…", passCode = "…")
+when (result) {
     is BrivoSDKApiState.Success -> {
-        BrivoApiState.Success(Unit)
+        val pass: BrivoOnairPass? = result.data
+        // If useSDKStorage = true, the redeemed pass is persisted automatically.
     }
+    is BrivoSDKApiState.Failed -> handle(result.brivoError)
 }
 ```
 
-#### BrivoConfiguration
+> [!IMPORTANT]
+> `redeemPass` takes **`passId`** and **`passCode`** — not an email/token pair. (Earlier docs and KDoc referred to `email`/`token`; those names are inaccurate.)
 
-This is the module used to configure Allegion Control Locks for the No Tour feature
+### Refresh a pass
 
-##### BrivoSDKConfigure Configure Access Point with Internal Credentials
+Refresh a single pass using its tokens:
 
 ```kotlin
-/**
- * Sends a request to configure an access point to BrivoSDK
- *
- * @param passId             Brivo passId
- * @param accessPointId      Brivo accessPointId
- * @param cancellationSignal Cancellation signal in order to cancel a BLE communication process
- *                           if a null cancellation signal is provided there will be default 30 second timeout
- * @param listener           listener that handles the communication state (SCANNING, AUTHENTICATE, SHOULD_CONTINUE, CONNECTING, COMMUNICATING, SUCCESS, FAILED)
- */
-fun configureAccessPoint(
+val tokens = BrivoTokens(accessToken = "…", refreshToken = "…")
+when (val result = BrivoSDKOnair.instance.refreshPass(tokens)) {
+    is BrivoSDKApiState.Success -> { /* result.data: BrivoOnairPass? */ }
+    is BrivoSDKApiState.Failed -> handle(result.brivoError)
+}
+```
+
+### Retrieve passes from SDK storage
+
+When `useSDKStorage = true`, you can read the locally stored passes. This call is **synchronous** (not `suspend`) and returns a map keyed by pass id:
+
+```kotlin
+when (val result = BrivoSDKOnair.instance.retrieveSDKLocallyStoredPasses()) {
+    is BrivoSDKApiState.Success -> {
+        val passes: LinkedHashMap<String, BrivoOnairPass> = result.data
+    }
+    is BrivoSDKApiState.Failed -> handle(result.brivoError)
+    // Fails with SDK_NOT_CONFIGURED_FOR_LOCAL_STORAGE (-1002) if storage is disabled,
+    // or SDK_NO_PASSES_FOUND_IN_LOCAL_STORAGE (-1003) if empty.
+}
+```
+
+---
+
+## 7. Using the SDK without SDK storage
+
+If you initialize with `useSDKStorage = false`, your app owns all pass data and supplies it on each operation. There is no separate "fetch a fresh access token" call — tokens travel inside the pass and credentials objects:
+
+- After `redeemPass` / `refreshPass`, tokens live in `pass.brivoOnairPassCredentials.tokens` (a `BrivoTokens` of `accessToken` / `refreshToken`).
+- You hand those credentials back to the SDK when you build a `BrivoSelectedAccessPoint` for unlocking, or when you call `refreshCredentials(...)`.
+- The optional `onTokenRefresh` config callback lets the SDK ask your app for a fresh token when needed.
+
+### Refreshing access tokens
+
+When SDK storage is **off**, refresh tokens yourself:
+
+```kotlin
+when (val result = BrivoSDKOnair.instance.refreshAccessTokenWithToken(
+    accessToken = "…",
+    refreshToken = "…",
+)) {
+    is BrivoSDKApiState.Success -> { /* result.data: BrivoAuthenticateResponse */ }
+    is BrivoSDKApiState.Failed -> handle(result.brivoError)
+}
+```
+
+> [!NOTE]
+> `refreshAccessTokenWithToken(...)` should only be used when SDK storage is off. When storage is on, the SDK refreshes tokens itself (optionally via your `onTokenRefresh` callback).
+
+### Refreshing externally managed credentials
+
+To refresh BLE / lock credentials for passes you manage yourself, use `BrivoSDKAccess.refreshCredentials(...)`. It refreshes credentials across all enabled modules for the supplied passes:
+
+```kotlin
+when (val result = BrivoSDKAccess.refreshCredentials(
+    passes = myPasses,
+    refreshMode = RefreshMode.PROVIDED_ONLY,   // refresh only the supplied passes
+)) {
+    is BrivoSDKApiState.Success -> { /* Unit */ }
+    is BrivoSDKApiState.Failed -> handle(result.brivoError)
+}
+```
+
+`RefreshMode` values:
+
+| Value | Meaning |
+| --- | --- |
+| `PROVIDED_ONLY` | Refresh only the passes you pass in. |
+| `FALLBACK_TO_LOCAL` | Use provided passes, falling back to locally stored data. (Default.) |
+| `LOCAL_ONLY` | Refresh from locally stored data only. |
+
+### Building a selected access point
+
+Without SDK storage, you build the `BrivoSelectedAccessPoint` for an unlock from a pass you already hold. **Do not construct it by hand** — use the `BrivoSelectedAccessPoint.make(...)` factory, which resolves the site, access point, reader uid, door type and BLE time frame internally and returns a `BrivoSDKApiState`:
+
+```kotlin
+// Resolve an access point id within a single pass:
+when (val result = BrivoSelectedAccessPoint.make(pass = myPass, accessPointId = "…")) {
+    is BrivoSDKApiState.Success -> {
+        val selected: BrivoSelectedAccessPoint = result.data
+        // pass it to unlockAccessPoint(selected, …)
+    }
+    is BrivoSDKApiState.Failed -> handle(result.brivoError)
+    // ONAIR_ACCESS_POINT_NOT_FOUND (-3008) — the id isn't in the pass.
+    // ONAIR_INVALID_PASS (404) — the matched pass has no access token.
+}
+```
+
+There is also an overload that searches a list of passes; the first pass containing the access point wins:
+
+```kotlin
+val result = BrivoSelectedAccessPoint.make(passes = myPasses, accessPointId = "…")
+```
+
+The resulting `BrivoSelectedAccessPoint` has this shape (you rarely read it directly; hand it straight to `unlockAccessPoint(brivoSelectedAccessPoint, …)` — see [Unlocking doors](#8-unlocking-doors)):
+
+```kotlin
+@Serializable
+data class BrivoSelectedAccessPoint(
+    val accessPointPath: AccessPointPath,          // accessPointId, siteId, passId
+    val readerUid: String,
+    val bleCredentials: String,
+    val deviceModelId: String,
+    val timeFrame: Int,
+    @SerialName("twoFactorEnabled") val isTwoFactorEnabled: Boolean,
+    val doorType: DoorType,
+    val passCredentials: BrivoOnairPassCredentials, // userId + tokens
+    val minimumAllowedRssi: Int = Int.MIN_VALUE,
+    val hasTrustedNetwork: Boolean,
+    val sendEvents: Boolean,
+)
+```
+
+> [!NOTE]
+> `BrivoSelectedAccessPoint.make(pass, accessPointId)` / `make(passes, accessPointId)` is the supported way to turn a pass + access point id into a `BrivoSelectedAccessPoint`. The older `BrivoSelectedAccessPointMapper.constructSelectedAccessPoint(...)` helper is **deprecated** — migrate to `make(...)`.
+
+---
+
+## 8. Unlocking doors
+
+All unlocking goes through the `BrivoSDKAccess` object (it is a Kotlin `object` — call methods directly, there is **no** `getInstance()`). The SDK chooses the channel (BLE vs. internet) automatically based on the door type.
+
+### Door types
+
+```kotlin
+enum class DoorType {
+    UNKNOWN, INTERNET, WAVELYNX,
+    HID_ORIGO, HID_ORIGO_OMNIKEY, DORMAKABA, SALTO
+}
+```
+
+| Door type | Channel |
+| --- | --- |
+| `INTERNET` | Cloud unlock (requires internet). |
+| `WAVELYNX` | Brivo BLE door (Bluetooth). |
+
+### The unlock APIs
+
+```kotlin
+// SDK-storage variant (id-based):
+fun unlockAccessPoint(
     passId: String,
     accessPointId: String,
-    cancellationSignal: CancellationSignal?,
-    listener: IOnCommunicateWithAccessPointListener
-)
-```
+    activity: FragmentActivity? = null,
+    unlockStrategy: UnlockStrategy? = null,
+): Flow<BrivoResult>
 
-```kotlin
-BrivoSDKConfigure.getInstance().configureAccessPoint(
-    passId,
-    accessPointId,
-    cancellationSignal,
-    object : IOnCommunicateWithAccessPointListener {
-        object : IOnCommunicateWithAccessPointListener {
-            override fun onResult(result: BrivoResult) {
-                when (result.communicationState) {
-                    AccessPointCommunicationState.SUCCESS -> {
-                        // Handle success
-                    }
-                    AccessPointCommunicationState.FAILED -> {
-                        // Handle failure
-                    }
-                }
-            }
-        }
-        )
-```
-
-##### BrivoSDKConfigure Configure Access Point with External Credentials
-
-```kotlin
-/**
- * Sends a request to configure an access point to BrivoSDK
- * All credentials and data are managed outside of BrivoSDK
- *
- * @param brivoSelectedAccessPoint Brivo accessPointPath (accessPointId, siteId, passId)
- *                                 Brivo bleReaderId
- *                                 Brivo bleCredentials
- *                                 Brivo deviceModelId
- *                                 Brivo doorType
- *                                 Brivo minimumAllowedRssi
- *                                 Unlock attempt time frame
- *                                 BrivoOnairPassCredentials (userId, accessToken, refreshToken)
- *
- * @param cancellationSignal Cancellation signal in order to cancel a BLE communication process
- *                           if a null cancellation signal is provided there will be default 30 second timeout
- * @param listener           listener that handles the communication state (SCANNING, AUTHENTICATE, SHOULD_CONTINUE, CONNECTING, COMMUNICATING, SUCCESS, FAILED)
- */
-fun configureAccessPoint(
+// External-credentials variant:
+fun unlockAccessPoint(
     brivoSelectedAccessPoint: BrivoSelectedAccessPoint,
-    cancellationSignal: CancellationSignal?,
-    listener: IOnCommunicateWithAccessPointListener
-)
+    activity: FragmentActivity? = null,
+    unlockStrategy: UnlockStrategy? = null,
+): Flow<BrivoResult>
 ```
 
-```kotlin
-BrivoSDKConfigure.getInstance().configureAccessPoint(
-    selectedAccessPoint,
-    cancellationSignal,
-    object : IOnCommunicateWithAccessPointListener {
-        override fun onResult(result: BrivoResult) {
-            when (result.communicationState) {
-                AccessPointCommunicationState.SUCCESS -> {
-                    // Handle success
-                }
-                AccessPointCommunicationState.FAILED -> {
-                    // Handle failure
-                }
-            }
-        }
-        )
-```
-
-#### BrivoLocalAuthentication
-
-This module manages the biometric authentication if an access point requires two factor.
-This module also can return the type of biometric authentication (device credentials, fingerprint or
-face id).
-
-##### BrivoSDKLocalAuthentication Init
-
-This method is called in order to initalize the BrivoLocalAuthenticationModule
+Collect the returned `Flow<BrivoResult>` and switch over `result.communicationState`:
 
 ```kotlin
-    /**
- * Initializes the BrivoLocalAuthentication module
- *
- * @param context              the context of the app in which the biometric screen will start from
- * @param title                the title of the biometric prompt
- * @param message              the message of the biometric prompt
- * @param negativeButtonText   the text of the negative button of the biometric prompt
- * @param description          the text of the description of the biometric prompt
- */
-fun init(
-    context: Context?,
-    title: String?,
-    message: String?,
-    negativeButtonText: String?,
-    description: String?
-)
-```
-
-```kotlin
-try {
-    BrivoSDKLocalAuthentication.init(
-        activity,
-        title,
-        message,
-        negativeButtonText,
-        description
-    )
-} catch (exception: BrivoSDKInitializationException) {
-    exception.printStackTrace()
-}
-```
-
-##### BrivoSDKLocalAuthentication Can Authenticate
-
-This method returns if authentication is possible, if it is will return the type of the biometric
-authentication (device credentials, fingerprint or face id).
-
-```kotlin
-/**
- * Return if authentication can be performed and, if its the case, the type of the authentication
- *
- * @param listener             listener that handles if the possibility of authentication is success or failure
- */
-suspend fun canAuthenticate(): BrivoSDKApiState<BiometricResult>
-```
-
-```kotlin
-try {
-    BrivoSDKLocalAuthentication.canAuthenticate().collect {
-        when (it) {
-            is BrivoSDKApiState.Success -> {
-                //Check BiometricResult type to see the type of authentication available
-            }
-            is BrivoSDKApiState.Failed -> {
-                // Handle failure
-            }
+val job = lifecycleScope.launch {
+    BrivoSDKAccess.unlockAccessPoint(
+        passId = passId,
+        accessPointId = accessPointId,
+        activity = this@MyActivity,   // lets the SDK host the biometric prompt here
+    ).collect { result ->
+        when (result.communicationState) {
+            AccessPointCommunicationState.SCANNING       -> showScanning()
+            AccessPointCommunicationState.ON_CLOSEST_READER -> showAtReader()
+            AccessPointCommunicationState.AUTHENTICATE   -> /* SDK is showing the 2FA prompt — informational, see below */ Unit
+            AccessPointCommunicationState.CONNECTING     -> showConnecting()
+            AccessPointCommunicationState.COMMUNICATING  -> showCommunicating()
+            AccessPointCommunicationState.SUCCESS        -> showUnlocked()
+            AccessPointCommunicationState.FAILED         -> handle(result.error)
+            else -> Unit
         }
     }
-} catch (exception: BrivoSDKInitializationException) {
-    e.printStackTrace()
 }
 ```
 
-### BrivoSDKLocalAuthentication Cancel Authentication
+`BrivoResult` carries:
 
 ```kotlin
-/**
- * Cancel ongoing authentication
- */
-fun cancelAuthentication()
+data class BrivoResult(
+    val communicationState: AccessPointCommunicationState,
+    val accessPointPath: AccessPointPath = AccessPointPath(),
+    val error: BrivoError? = null,
+    val bluetoothDeviceAdditionalInfo: AdditionalBleData? = null,
+    val scanCooldownDurationInSeconds: Int? = null,
+)
 ```
 
+### Communication states
+
+| State | Meaning |
+| --- | --- |
+| `SCANNING` | Scanning for the access point. |
+| `AUTHENTICATE` | The SDK is showing the two-factor biometric prompt — informational only (below). |
+| `CONNECTING` | Connecting to the access point. |
+| `COMMUNICATING` | Exchanging data with the access point. |
+| `ON_CLOSEST_READER` | The user is at the closest reader. |
+| `SUCCESS` | Unlock succeeded. |
+| `FAILED` | Unlock failed (`result.error` is populated). |
+| ~~`SHOULD_CONTINUE`~~ | **Deprecated** — facility safety should now be checked before the unlock starts; do not handle here. |
+| ~~`SCANNING_COOLDOWN`~~ | **Deprecated** — unreliable with continuous scanning; do not handle. |
+
+### Cancelling an unlock
+
+> [!IMPORTANT]
+> There is **no** `cancellationSignal` parameter on the current `unlockAccessPoint(...)` overloads. To cancel an in-progress unlock, **cancel the coroutine that is collecting the flow**:
+>
+> ```kotlin
+> job.cancel()   // the Job from launch { … collect { … } }
+> ```
+>
+> The overloads that took a `shouldContinueUnlockOperation` callback are **deprecated**; do not use them in new code, unless using the old unlockNearestBleAccessPoint method.
+
+### Channel selection (multi-channel doors)
+
+Channel selection is automatic and SDK-internal: for a door that supports more than one channel, the SDK picks the appropriate one based on door type and availability. The only public override is `UnlockStrategy`:
+
 ```kotlin
-BrivoSDKLocalAuthentication.cancelAuthentication()
-```
-
-BrivoSDK Errors
-=======
-
-## General SDK Errors
-
-```kotlin
-object BrivoErrorCodes {
-    const val SDK_NOT_INITIALIZED: Int = -1001
-    const val SDK_NOT_CONFIGURED_FOR_LOCAL_STORAGE: Int = -1002
-    const val SDK_NO_PASSES_FOUND_IN_LOCAL_STORAGE: Int = -1003
-    const val SDK_ACCESS_POINT_NOT_FOUND_IN_LOCAL_STORAGE: Int = -1004
-    const val SDK_PASS_NOT_FOUND_IN_LOCAL_STORAGE: Int = -1005
-    const val SDK_BLE_ACCESS_POINT_NOT_FOUND_IN_GIVEN_PASS: Int = -1006
-    const val SDK_BLE_ACCESS_POINT_INVALID_DOOR_TYPE: Int = -1007
-    const val SDK_REQUIRES_INTERNET_CONNECTION: Int = -1008
-    const val SDK_NOT_ALLOWED_TO_CONTINUE: Int = -1009
-}
-
-```
-
-## Brivo Onair Errors
-
-```kotlin
-object BrivoOnairErrorCodes {
-    const val ONAIR_AUTHENTICATION_EXCEPTION: Int = 401
-    const val ONAIR_INVALID_PASS: Int = 404
-    const val ONAIR_SERVER_CALL_FAILED: Int = -3001
-    const val ONAIR_AUTHENTICATION_MISSING_DATA: Int = -3002
-    const val ONAIR_REDEEM_PASS_MISSING_RESPONSE: Int = -3003
-    const val ONAIR_REDEEM_PASS_MISSING_PASS: Int = -3004
-    const val ONAIR_RETRIEVE_SITES_MISSING_SITES: Int = -3005
-    const val ONAIR_RETRIEVE_SITE_DETAILS_MISSING_SITE: Int = -3006
-    const val ONAIR_RETRIEVE_SITE_ACCESS_POINTS_MISSING_SITE: Int = -3007
-    const val ONAIR_ACCESS_POINT_NOT_FOUND: Int = -3008
-    const val ONAIR_AUTHENTICATION_UNABLE_TO_REFRESH_TOKEN: Int = -3009
-    const val ONAIR_TRUSTED_NETWORK_LOCATION_PERMISSION_NOT_GRANTED: Int = -3010
-    const val ONAIR_RETRIEVE_BLE_SECURITY_TOKENS_FAILED: Int = -3011
-    const val ONAIR_HID_ORIGO_INVITATION_CODE_ERROR: Int = -4000
-    const val ONAIR_HID_ORIGO_WALLET_INVITATION_CODE_ERROR: Int = -4001
-    const val ONAIR_HID_ORIGO_WALLET_UNLINK_ERROR: Int = -4002
+enum class UnlockStrategy {
+    // Forces internet unlock for Brivo Wavelynx doors, bypassing BLE even when available.
+    ForceInternetUnlockForBrivoDoors
 }
 ```
 
-## Brivo Ble Errors
+Pass it into either `unlockAccessPoint(...)` overload via the `unlockStrategy` parameter:
 
 ```kotlin
-object BrivoBLEErrorCodes {
-    const val BLE_UNKNOWN_ERROR: Int = -2000
-    const val BLE_DISABLED_ON_DEVICE: Int = -2001
-    const val BLE_CONNECTION_MANAGER_FAILED_TO_INITIALIZE: Int = -2002
-    const val BLE_FAILED_TRANSMISSION: Int = -2003
-    const val BLE_ACCESS_DENIED: Int = -2004
-    const val BLE_AUTHENTICATION_TIMED_OUT: Int = -2005
-    const val BLE_LOCATION_PERMISSION_NOT_GRANTED: Int = -2006
-    const val BLE_LOCATION_DISABLED_ON_DEVICE: Int = -2007
-    const val BLE_CONNECTION_MISSING_BRIVO_BLE_CREDENTIAL: Int = -2008
-    const val BLE_CONNECTION_MISSING_USER_ID: Int = -2009
-    const val BLE_CONNECTION_MISSING_ACCESS_POINT: Int = -2010
-    const val BLE_CONNECTION_MISSING_BLE_CREDENTIALS: Int = -2011
-    const val BLE_DEVICE_DISCONNECTED: Int = -2012
-    const val BLE_BLUETOOTH_PERMISSION_NOT_GRANTED: Int = -2013
+BrivoSDKAccess.unlockAccessPoint(
+    passId = passId,
+    accessPointId = accessPointId,
+    unlockStrategy = UnlockStrategy.ForceInternetUnlockForBrivoDoors,
+)
+```
+
+> [!WARNING]
+> `ForceInternetUnlockForBrivoDoors` allows a remote unlock without physical presence at the door. Use with care.
+
+### Two-factor / biometric unlocks
+
+Two-factor is **handled entirely by the SDK**. When an access point requires two-factor, `unlockAccessPoint(...)` checks biometric availability, shows the prompt, and continues the unlock on success, all internally. Your only responsibilities are:
+
+1. **Configure the prompt text** once via `BrivoSDKLocalAuthentication.init(...)` (requires the `USE_BIOMETRIC` permission).
+2. **Call `unlockAccessPoint(...)`** as you normally would — strongly recommanded to pass an `fragmentActivity` unless called from a widget.
+```kotlin
+// 1. Configure the prompt once (e.g. at startup). This only sets the
+//    title/message/button text the SDK will display.
+BrivoSDKLocalAuthentication.init(
+    context = applicationContext,
+    title = "Confirm it's you",
+    message = "Authenticate to unlock the door",
+    negativeButtonText = "Cancel",
+    description = null,
+)
+
+// 2. Just unlock. If the access point is two-factor, the SDK shows the
+//    biometric prompt automatically before completing the unlock.
+BrivoSDKAccess.unlockAccessPoint(
+    passId = passId,
+    accessPointId = accessPointId,
+    activity = this@MyActivity,   // optional — see below
+).collect { result -> /* … */ }
+```
+
+**The `activity` parameter controls *where* the prompt is hosted, not *whether* it appears:**
+
+- **Pass an `FragmentActivity`** — the SDK hosts the biometric prompt inside your activity (recommended when you unlock from a foreground screen).
+- **Pass `null`** (omit it) — the SDK shows the prompt in its own internal activity, so two-factor still works even when you trigger an unlock without a hosting activity. Recomanded only for unlocks originating from widgets.
+
+The unlock flow emits `AccessPointCommunicationState.AUTHENTICATE` while the prompt is showing — this is **informational only** (e.g. to update your UI). You don't need to act on it. `BrivoSelectedAccessPoint.isTwoFactorEnabled` flags 2FA per access point.
+
+### "Magic Button" — unlock the nearest device
+
+The Magic Button scans continuously for nearby BLE readers, ranks them by signal strength.
+These results are supposed to be shown in the app so the user can choose which to unlock. Then you can call the normal unlock method for that device.
+Two scan entry points exist, one per storage mode. Both return `Flow<ContinuousScanningResults>`, which offers `onScanResults`, `onScanState`, and `onError` helpers.
+
+```kotlin
+sealed class ContinuousScanningResults {
+    data class ScanResults(val nearbyDevices: List<NearbyDevice>)
+    data class ScanState(val continuousScanningState: ContinuousScanningState) // WaitingForBluetooth
+    data class Error(val continuousScanningErrors: ContinuousScanningErrors)
+    inline fun onScanResults(action: (List<NearbyDevice>) -> Unit): ContinuousScanningResults
+    inline fun onScanState(action: (ContinuousScanningState) -> Unit): ContinuousScanningResults
+    inline fun onError(action: (ContinuousScanningErrors) -> Unit): ContinuousScanningResults
+}
+
+data class NearbyDevice(
+    val accessPointId: String,
+    val readerUUID: ReaderUUID,
+    val rssiValue: Int,
+    val doorType: DoorType,
+)
+```
+
+> [!WARNING]
+> Ranking is based on **RSSI (Bluetooth signal strength), not true distance.** Signal strength is affected by phone position, interference, and reader hardware, so the "strongest" device is not guaranteed to be the physically closest. Sort by `rssiValue` descending (strongest first).
+
+#### (a) Magic Button with SDK storage
+
+```kotlin
+val scanJob = lifecycleScope.launch {
+    BrivoSDKAccess.startScanForNearbyDevicesWithSDKStorage().collect { results ->
+        results
+            .onScanResults { devices ->
+                val nearest = devices.maxByOrNull { it.rssiValue } ?: return@onScanResults
+                // Unlock by id (SDK storage supplies the credentials):
+                lifecycleScope.launch {
+                    BrivoSDKAccess.unlockAccessPoint(
+                        passId = /* the pass id for this access point */ "",
+                        accessPointId = nearest.accessPointId,
+                        activity = this@MyActivity,
+                    ).collect { /* handle BrivoResult states */ }
+                }
+            }
+            .onScanState { state ->
+                if (state is ContinuousScanningState.WaitingForBluetooth) promptEnableBluetooth()
+            }
+            .onError { handle(it.error) }
+    }
+}
+// Stop scanning by cancelling the collecting coroutine:
+// scanJob.cancel()
+```
+
+#### (b) Magic Button with external credentials
+
+```kotlin
+val scanJob = lifecycleScope.launch {
+    BrivoSDKAccess.startScanForNearbyDevices(passes = myPasses).collect { results ->
+        results
+            .onScanResults { devices ->
+                val nearest = devices.maxByOrNull { it.rssiValue } ?: return@onScanResults
+                // Resolve the scanned device into a BrivoSelectedAccessPoint from your passes:
+                val made = BrivoSelectedAccessPoint.make(
+                    passes = myPasses,
+                    accessPointId = nearest.accessPointId,
+                )
+                val selected = (made as? BrivoSDKApiState.Success)?.data ?: return@onScanResults
+                lifecycleScope.launch {
+                    BrivoSDKAccess.unlockAccessPoint(
+                        brivoSelectedAccessPoint = selected,
+                        activity = this@MyActivity,
+                    ).collect { /* handle BrivoResult states */ }
+                }
+            }
+            .onScanState { /* WaitingForBluetooth */ }
+            .onError { handle(it.error) }
+    }
 }
 ```
 
-## Brivo Authentication Errors
+> [!NOTE]
+> For the external-credentials path, resolve a scanned device into a `BrivoSelectedAccessPoint` with `BrivoSelectedAccessPoint.make(passes = myPasses, accessPointId = nearest.accessPointId)`, which returns a `BrivoSDKApiState` (see [Building a selected access point](#building-a-selected-access-point)). A `NearbyDevice.toSelectedAccessPoint()` API does **not** exist, and the older `BrivoSelectedAccessPointMapper.constructSelectedAccessPoint(...)` helper is deprecated.
 
-```kotlin
-object BrivoLocalAuthenticationErrorCodes {
-    const val SDK_LOCAL_AUTHENTICATION_FAILURE: Int = -4000
-    const val SDK_LOCAL_HARDWARE_UNAVAILABLE: Int = -4001
-    const val SDK_LOCAL_TIMEOUT: Int = -4002
-    const val SDK_LOCAL_HW_NOT_PRESENT: Int = -4003
-    const val SDK_LOCAL_NONE_ENROLLED: Int = -4004
-    const val SDK_LOCAL_AUTHENTICATION_CONTEXT_NOT_SET: Int = -4005
-    const val SDK_LOCAL_AUTHENTICATION_CANCEL: Int = -4006
-    const val SDK_LOCAL_INTENT_NULL: Int = -4007
-    const val SDK_LOCAL_AUTHENTICATION_SYSTEM_CANCEL: Int = -4008
-}```
+#### Deprecated: `unlockNearestBLEAccessPoint`
 
-## Brivo BLE  Allegion Errors
+> [!NOTE]
+> `unlockNearestBLEAccessPoint(...)` (both overloads) is **deprecated**. Migrate to `startScanForNearbyDevices(...)` / `startScanForNearbyDevicesWithSDKStorage(...)` followed by `unlockAccessPoint(...)`, which is compatible with the continuous-scanning API.
 
-```kotlin
-object BrivoBLEAllegionErrorCodes {
-    const val HAS_ONGOING_OPERATION_ERROR = -6000
-    const val ALLEGION_SDK_DEPENDENCY_NOT_FOUND = -6001
-    const val NO_MATCHING_BLE_DEVICE_FOUND = -6002
-    const val NO_BLE_RIGHTS_FOUND = -6004
-    const val NO_BLE_ACCESS_PAYLOAD_FOUND = -6006
-    const val FAILED_TO_REFRESH_CREDENTIALS = -6008
-    const val REQUEST_ACCESS_FAILED = -6012
-    const val PASS_NOT_ELIGIBLE = -6013
-    const val DISCONNECT_DEVICE_FAILED = -6014
-}
-```
+---
 
-## Brivo HID Origo Errors
+## 9. Error reference
 
-```kotlin
-object BrivoHIDOrigoErrorCodes {
-    const val UNKNOWN_ERROR = -8000
-    const val NO_CREDENTIALS_FOUND = -8001
-    const val REQUEST_ACCESS_FAILED = -8002
-    const val REDEEM_INVITATION_CODE_FAILED = -8003
-    const val NO_MATCHING_BLE_DEVICE_FOUND = -8004
-    const val CLEAR_CREDENTIALS_FAILED = -8005
-    const val REFRESH_CREDENTIALS_FAILED = -8006
-    const val LOCATION_PERMISSION_NOT_GRANTED = -8007
-    const val SDK_IS_BUSY = -8008
-    const val NOT_ELIGIBLE = -8009
-    const val EMPTY_INVITATION_CODE = -8010
-}
-```
+One-shot calls return `BrivoSDKApiState.Failed(brivoError: BrivoError)`; unlock/scan flows surface errors via `BrivoResult.error` or `ContinuousScanningErrors.error`. `BrivoError` is `data class BrivoError(val message: String?, val code: Int)` — match on `code` against the tables below.
+
+### `BrivoErrorCodes` (core)
+
+| Code | Name |
+| --- | --- |
+| -1001 | `SDK_NOT_INITIALIZED` |
+| -1002 | `SDK_NOT_CONFIGURED_FOR_LOCAL_STORAGE` |
+| -1003 | `SDK_NO_PASSES_FOUND_IN_LOCAL_STORAGE` |
+| -1004 | `SDK_ACCESS_POINT_NOT_FOUND_IN_LOCAL_STORAGE` |
+| -1005 | `SDK_PASS_NOT_FOUND_IN_LOCAL_STORAGE` |
+| -1006 | `SDK_BLE_ACCESS_POINT_NOT_FOUND_IN_GIVEN_PASS` |
+| -1007 | `SDK_BLE_ACCESS_POINT_INVALID_DOOR_TYPE` |
+| -1008 | `SDK_REQUIRES_INTERNET_CONNECTION` |
+| -1009 | `SDK_NOT_ALLOWED_TO_CONTINUE` |
+| -1010 | `MODULE_NOT_ENABLED` |
+
+### `BrivoOnairErrorCodes` (passes / cloud)
+
+| Code | Name |
+| --- | --- |
+| 401 | `ONAIR_AUTHENTICATION_EXCEPTION` |
+| 404 | `ONAIR_INVALID_PASS` |
+| -3001 | `ONAIR_SERVER_CALL_FAILED` |
+| -3002 | `ONAIR_AUTHENTICATION_MISSING_DATA` |
+| -3003 | `ONAIR_REDEEM_PASS_MISSING_RESPONSE` |
+| -3004 | `ONAIR_REDEEM_PASS_MISSING_PASS` |
+| -3005 | `ONAIR_RETRIEVE_SITES_MISSING_SITES` |
+| -3006 | `ONAIR_RETRIEVE_SITE_DETAILS_MISSING_SITE` |
+| -3007 | `ONAIR_RETRIEVE_SITE_ACCESS_POINTS_MISSING_SITE` |
+| -3008 | `ONAIR_ACCESS_POINT_NOT_FOUND` |
+| -3009 | `ONAIR_AUTHENTICATION_UNABLE_TO_REFRESH_TOKEN` |
+| -3010 | `ONAIR_TRUSTED_NETWORK_LOCATION_PERMISSION_NOT_GRANTED` |
+| -3011 | `ONAIR_RETRIEVE_BLE_SECURITY_TOKENS_FAILED` |
+
+### `BrivoBLEErrorCodes` (Bluetooth)
+
+| Code | Name |
+| --- | --- |
+| -2000 | `BLE_UNKNOWN_ERROR` |
+| -2001 | `BLE_DISABLED_ON_DEVICE` |
+| -2002 | `BLE_CONNECTION_MANAGER_FAILED_TO_INITIALIZE` |
+| -2003 | `BLE_FAILED_TRANSMISSION` |
+| -2004 | `BLE_ACCESS_DENIED` |
+| -2005 | `BLE_AUTHENTICATION_TIMED_OUT` |
+| -2006 | `BLE_LOCATION_PERMISSION_NOT_GRANTED` |
+| -2007 | `BLE_LOCATION_DISABLED_ON_DEVICE` |
+| -2008 | `BLE_CONNECTION_MISSING_BRIVO_BLE_CREDENTIAL` |
+| -2009 | `BLE_CONNECTION_MISSING_USER_ID` |
+| -2010 | `BLE_CONNECTION_MISSING_ACCESS_POINT` |
+| -2011 | `BLE_CONNECTION_MISSING_BLE_CREDENTIALS` |
+| -2012 | `BLE_DEVICE_DISCONNECTED` |
+| -2013 | `BLE_BLUETOOTH_PERMISSION_NOT_GRANTED` |
+| -2014 | `BLE_NO_MATCHING_DEVICE_FOUND` |
+
+### `BrivoAccessErrorCodes` (unlock / continuous scan)
+
+| Code | Name |
+| --- | --- |
+| -3001 | `ACCESS_SCAN_TIMEOUT` |
+| -3002 | `ACCESS_CONTINUOUS_SCAN_NO_SCAN_TO_START` |
+| -3003 | `ACCESS_CONTINUOUS_SCAN_ALREADY_STARTED` |
+| -3004 | `ACCESS_CONTINUOUS_SCAN_TOO_MANY_SCANS` |
+
+### `BrivoLocalAuthenticationErrorCodes` (biometric / two-factor)
+
+| Code | Name |
+| --- | --- |
+| -4000 | `SDK_LOCAL_AUTHENTICATION_FAILURE` |
+| -4001 | `SDK_LOCAL_HARDWARE_UNAVAILABLE` |
+| -4002 | `SDK_LOCAL_TIMEOUT` |
+| -4003 | `SDK_LOCAL_HW_NOT_PRESENT` |
+| -4004 | `SDK_LOCAL_NONE_ENROLLED` |
+| -4005 | `SDK_LOCAL_AUTHENTICATION_CONTEXT_NOT_SET` |
+| -4006 | `SDK_LOCAL_AUTHENTICATION_CANCEL` |
+| -4007 | `SDK_LOCAL_INTENT_NULL` |
+| -4008 | `SDK_LOCAL_AUTHENTICATION_SYSTEM_CANCEL` |
+
+> [!NOTE]
+> `BrivoLocalAuthenticationErrorCodes` and the HID Origo codes in `BrivoOnairErrorCodes` share some numeric values (e.g. -4000) but live in **different objects** — always match against the object relevant to the operation you called.
+
+---
+
+## 10. Keeping up to date & good practices
+
+- **Pin a release tag.** Always depend on an explicit JitPack tag (e.g. `3.4.0`), never a moving branch, so builds are reproducible. Confirm the latest tag with Brivo.
+- **Initialize once, early.** Call `BrivoSDK.init(...)` from your `Application.onCreate()` with the application context, and handle `BrivoSDKInitializationException`.
+- **You own permissions.** The SDK never prompts. Declare manifest permissions and request runtime permissions (`BLUETOOTH_SCAN`/`BLUETOOTH_CONNECT` on API 31+, location pre-31, and location for trusted networks) before any BLE operation, and gate scans on Bluetooth being enabled.
+- **Treat RSSI as a hint, not a measurement.** When using the Magic Button, remember ranking is signal-strength based; don't present it to users as exact distance.
+- **Cancel via coroutines.** Stop an in-flight unlock or scan by cancelling the collecting coroutine `Job`. There is no cancellation-signal parameter.
+- **Avoid deprecated APIs.** Migrate off `unlockNearestBLEAccessPoint(...)` and the `shouldContinueUnlockOperation` overloads, and don't handle `SHOULD_CONTINUE` / `SCANNING_COOLDOWN` states.
+- **Handle every error path.** Match on `BrivoSDKApiState.Failed` / `BrivoResult.error` and use the [error reference](#9-error-reference); surface actionable states (e.g. `WaitingForBluetooth`, permission-not-granted) to the user.
+- **Check `BrivoSDK.version`** at runtime if you need to confirm which SDK build is deployed (remember the `v` prefix).
+
+---
 
 ## Issues
 
 If you run into any bugs or issues, feel free to post
-an [Issues](https://github.com/brivo-mobile-team/brivo-mobile-sdk-android/issues) to discuss.
+an [Issue](https://github.com/brivo-mobile-team/brivo-mobile-sdk-android/issues) to discuss.
 
 <p align="center">
 Made with ❤️ at Brivo
@@ -826,7 +711,7 @@ Made with ❤️ at Brivo
 License
 =======
 
-    Copyright 2024 Brivo Inc.
+    Copyright 2026 Brivo Inc.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
