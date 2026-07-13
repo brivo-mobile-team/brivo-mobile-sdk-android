@@ -4,6 +4,7 @@ import AlertMessageDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -41,7 +42,8 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     onRedeemPassPressed: () -> Unit,
     onSitePressed: (String, String) -> Unit,
-    onMagicButtonPressed: () -> Unit,
+    onContinuousScannerPressed: () -> Unit,
+    onUnlockNearestAccessPointPressed: () -> Unit,
 ) {
 
     ComposableLifecycle { _, event ->
@@ -56,7 +58,8 @@ fun HomeScreen(
         state = state,
         onRedeemPassPressed = onRedeemPassPressed,
         onSitePressed = onSitePressed,
-        onMagicButtonPressed = onMagicButtonPressed,
+        onContinuousScannerPressed = onContinuousScannerPressed,
+        onUnlockNearestAccessPointPressed = onUnlockNearestAccessPointPressed,
         onEvent = viewModel::onEvent
     )
 }
@@ -67,7 +70,8 @@ fun HomeScreenContent(
     state: HomeViewModel.HomeViewState,
     onRedeemPassPressed: () -> Unit,
     onSitePressed: (String, String) -> Unit,
-    onMagicButtonPressed: () -> Unit,
+    onContinuousScannerPressed: () -> Unit,
+    onUnlockNearestAccessPointPressed: () -> Unit,
     onEvent: (HomeUIEvent) -> Unit
 ) {
     Scaffold(
@@ -101,14 +105,27 @@ fun HomeScreenContent(
                     Text(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { onMagicButtonPressed() }
+                            .clickable { onContinuousScannerPressed() }
                             .background(color = MaterialTheme.colorScheme.primary)
                             .padding(12.dp),
-                        text = stringResource(id = R.string.home_magic_button),
+                        text = stringResource(id = R.string.home_continuous_scanner),
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onPrimary
                     )
+                    Spacer(modifier = Modifier.padding(4.dp))
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onUnlockNearestAccessPointPressed() }
+                            .background(color = MaterialTheme.colorScheme.primary)
+                            .padding(12.dp),
+                        text = stringResource(id = R.string.home_unlock_nearest_access_point),
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Spacer(modifier = Modifier.padding(12.dp))
                 }
                 PassesList(
                     passes = state.passes,
@@ -207,7 +224,8 @@ fun HomePreview() {
             state = state,
             onSitePressed = { _, _ -> },
             onRedeemPassPressed = { },
-            onMagicButtonPressed = { },
+            onContinuousScannerPressed = { },
+            onUnlockNearestAccessPointPressed = { },
             onEvent = { }
         )
     }
@@ -229,7 +247,8 @@ fun HomeEmptyPreview() {
             state = state,
             onSitePressed = { _, _ -> },
             onRedeemPassPressed = { },
-            onMagicButtonPressed = { },
+            onContinuousScannerPressed = { },
+            onUnlockNearestAccessPointPressed = { },
             onEvent = { }
         )
     }

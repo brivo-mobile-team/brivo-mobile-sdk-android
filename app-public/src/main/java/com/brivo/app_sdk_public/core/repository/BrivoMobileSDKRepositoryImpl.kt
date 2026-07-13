@@ -10,6 +10,7 @@ import com.brivo.sdk.BrivoSDK
 import com.brivo.sdk.BrivoSDKInitializationException
 import com.brivo.sdk.access.BrivoSDKAccess
 import com.brivo.sdk.access.RefreshMode
+import com.brivo.sdk.access.continuousscanning.ContinuousScanningResults
 import com.brivo.sdk.enums.ServerRegion
 import com.brivo.sdk.localauthentication.BrivoSDKLocalAuthentication
 import com.brivo.sdk.model.BrivoResult
@@ -59,9 +60,11 @@ class BrivoMobileSDKRepositoryImpl @Inject constructor(
         return DomainState.Success(Unit)
     }
 
-    override suspend fun refreshAllSDKs(passes: List<BrivoOnairPass>) {
+    override suspend fun refreshAllSDKs(passes: List<BrivoOnairPass>): BrivoSDKApiState<Unit> =
         BrivoSDKAccess.refreshCredentials(passes, refreshMode = RefreshMode.FALLBACK_TO_LOCAL)
-    }
+
+    override fun startScanForNearbyDevices(passes: List<BrivoOnairPass>): Flow<ContinuousScanningResults> =
+        BrivoSDKAccess.startScanForNearbyDevices(passes)
 
     override suspend fun getWalletEligibilityStatus(
         tokens: BrivoTokens,

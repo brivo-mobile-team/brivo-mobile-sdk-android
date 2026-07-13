@@ -68,11 +68,11 @@ fun NavGraphBuilder.unlockDoorScreen(
     }
 }
 
-fun NavController.navigateUnlockDoorMagicButtonScreen() {
+fun NavController.navigateUnlockNearestAccessPoint() {
     this.navigate(Destinations.UnlockDoor.route)
 }
 
-fun NavGraphBuilder.unlockDoorMagicButtonScreen(
+fun NavGraphBuilder.unlockNearestAccessPointScreen(
     onBackPressed: () -> Unit,
     onCheckPermissions: suspend (hasTrustedNetwork: Boolean) -> Boolean
 ) {

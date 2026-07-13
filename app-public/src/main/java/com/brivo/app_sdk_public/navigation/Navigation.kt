@@ -1,9 +1,12 @@
 package com.brivo.app_sdk_public.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.fragment.app.FragmentActivity
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -12,11 +15,15 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.brivo.app_sdk_public.MainActivity
 import com.brivo.app_sdk_public.features.home.presentation.HomeScreen
+import com.brivo.app_sdk_public.features.continuousscanner.ContinuousScannerViewModel
+import com.brivo.common_app.features.continuousscanner.ContinuousScannerScreen
+import com.brivo.common_app.features.continuousscanner.continuousScannerScreen
+import com.brivo.common_app.features.continuousscanner.navigateToContinuousScanner
 import com.brivo.app_sdk_public.features.redeempass.navigateRedeemPassScreen
 import com.brivo.app_sdk_public.features.redeempass.redeemPassScreen
-import com.brivo.app_sdk_public.features.unlockdoor.navigation.navigateUnlockDoorMagicButtonScreen
+import com.brivo.app_sdk_public.features.unlockdoor.navigation.navigateUnlockNearestAccessPoint
 import com.brivo.app_sdk_public.features.unlockdoor.navigation.navigateUnlockDoorScreen
-import com.brivo.app_sdk_public.features.unlockdoor.navigation.unlockDoorMagicButtonScreen
+import com.brivo.app_sdk_public.features.unlockdoor.navigation.unlockNearestAccessPointScreen
 import com.brivo.app_sdk_public.features.unlockdoor.navigation.unlockDoorScreen
 import com.brivo.common_app.checkAndAskPermissions
 import com.brivo.app_sdk_public.features.accesspoints.navigation.accessPointsScreen
@@ -49,11 +56,14 @@ fun MainNavigation(
             onSitePressed = { passId, siteId ->
                 navController.navigateAccessPointsScreen(passId = passId, siteId = siteId)
             },
-            onMagicButtonPressed = {
-                navController.navigateUnlockDoorMagicButtonScreen()
+            onContinuousScannerPressed = {
+                navController.navigateToContinuousScanner()
+            },
+            onUnlockNearestAccessPointPressed = {
+                navController.navigateUnlockNearestAccessPoint()
             },
             nestedGraph = {
-                unlockDoorMagicButtonScreen(
+                unlockNearestAccessPointScreen(
                     onBackPressed = { navController.navigateUp() },
                     onCheckPermissions = { hasTrustedNetwork ->
                         checkAndAskPermissions(
@@ -64,6 +74,25 @@ fun MainNavigation(
                     }
 
                 )
+                continuousScannerScreen {
+                    val continuousScannerViewModel: ContinuousScannerViewModel = hiltViewModel()
+                    val continuousScannerState by continuousScannerViewModel.continuousScannerState.collectAsStateWithLifecycle()
+                    val discoveredPeripherals by continuousScannerViewModel.discoveredDevices.collectAsStateWithLifecycle()
+                    ContinuousScannerScreen(
+                        continuousScannerState = continuousScannerState,
+                        discoveredPeripherals = discoveredPeripherals,
+                        onCheckPermissions = {
+                            checkAndAskPermissions(
+                                false,
+                                locationPermissionRequest,
+                                bluetoothPermissionRequest
+                            )
+                        },
+                        onStartScanning = continuousScannerViewModel::startScanning,
+                        onDismissError = continuousScannerViewModel::dismissScanningError,
+                        onUnlockClick = { continuousScannerViewModel.unlockNearestBLEAccessPoint(activity) }
+                    )
+                }
                 unlockDoorScreen(
                     onBackPressed = { navController.navigateUp() },
                     onCheckPermissions = { hasTrustedNetwork ->
@@ -98,7 +127,8 @@ fun MainNavigation(
 fun NavGraphBuilder.homeGraph(
     onRedeemPassPressed: () -> Unit,
     onSitePressed: (String, String) -> Unit,
-    onMagicButtonPressed: () -> Unit,
+    onContinuousScannerPressed: () -> Unit,
+    onUnlockNearestAccessPointPressed: () -> Unit,
     nestedGraph: NavGraphBuilder.() -> Unit
 ) {
     navigation(
@@ -111,7 +141,8 @@ fun NavGraphBuilder.homeGraph(
             HomeScreen(
                 onRedeemPassPressed = onRedeemPassPressed,
                 onSitePressed = onSitePressed,
-                onMagicButtonPressed = onMagicButtonPressed
+                onContinuousScannerPressed = onContinuousScannerPressed,
+                onUnlockNearestAccessPointPressed = onUnlockNearestAccessPointPressed
             )
         }
         nestedGraph()
