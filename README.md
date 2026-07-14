@@ -2,7 +2,7 @@
 
 # Brivo Mobile SDK for Android
 
-The Brivo Mobile SDK lets your Android app turn a user's phone into a mobile credential: redeem and manage mobile passes, unlock Brivo doors over Bluetooth (BLE) or the internet, and handle two-factor (biometric) prompts — all through a small, coroutine-friendly public surface. This guide targets external integrators building against SDK **v3.4.0**.
+The Brivo Mobile SDK lets your Android app turn a user's phone into a mobile credential: redeem and manage mobile passes, unlock Brivo doors over Bluetooth (BLE) or the internet, and handle two-factor (biometric) prompts — all through a small, coroutine-friendly public surface. This guide targets external integrators building against SDK **v3.5.0**.
 
 > [!NOTE]
 > Additional third-party lock integrations are available from Brivo. This document covers the Brivo core flows only.
@@ -54,13 +54,13 @@ Asynchronous style:
 | Min API level | **API 29** for the core modules (`brivocore`, `brivoonair`, `brivoaccess`, `brivoble`, `brivoble-core`, `brivolocalauthentication`). |
 | Build JDK | **JDK 17** (the SDK is built and published with the JDK 17 toolchain). |
 | Language | Kotlin, coroutines/`Flow`-based. |
-| SDK version | **3.4.0** (see `BrivoSDK.version` below). |
+| SDK version | **3.5.0** (see `BrivoSDK.version` below). |
 
 > [!NOTE]
-> `BrivoSDK.version` returns the string **`"v3.4.0"`** — note the leading `v` prefix.
+> `BrivoSDK.version` returns the string **`"v3.5.0"`** — note the leading `v` prefix.
 
 ```kotlin
-val version: String = BrivoSDK.version          // "v3.4.0"
+val version: String = BrivoSDK.version          // "v3.5.0"
 val deviceId: String = BrivoSDK.getDeviceId()   // stable per-install UUID (hyphens stripped)
 ```
 
@@ -87,7 +87,7 @@ These are the required ones:
 
 ```kotlin
 dependencies {
-    // Each module separate (Tag = the release tag, e.g. 3.4.0):
+    // Each module separate (Tag = the release tag, e.g. 3.5.0):
     implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoaccess:tag")
     implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoble:tag")
     implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoblecore:tag")
@@ -688,7 +688,7 @@ One-shot calls return `BrivoSDKApiState.Failed(brivoError: BrivoError)`; unlock/
 
 ## 10. Keeping up to date & good practices
 
-- **Pin a release tag.** Always depend on an explicit JitPack tag (e.g. `3.4.0`), never a moving branch, so builds are reproducible. Confirm the latest tag with Brivo.
+- **Pin a release tag.** Always depend on an explicit JitPack tag (e.g. `3.5.0`), never a moving branch, so builds are reproducible. Confirm the latest tag with Brivo.
 - **Initialize once, early.** Call `BrivoSDK.init(...)` from your `Application.onCreate()` with the application context, and handle `BrivoSDKInitializationException`.
 - **You own permissions.** The SDK never prompts. Declare manifest permissions and request runtime permissions (`BLUETOOTH_SCAN`/`BLUETOOTH_CONNECT` on API 31+, location pre-31, and location for trusted networks) before any BLE operation, and gate scans on Bluetooth being enabled.
 - **Treat RSSI as a hint, not a measurement.** When using the Magic Button, remember ranking is signal-strength based; don't present it to users as exact distance.
