@@ -51,7 +51,6 @@ dependencies {
         compileOnly("org.bitbucket.brivoinc.mobile-sdk-android:brivocore:${brivoSdkVersion}")
         compileOnly("org.bitbucket.brivoinc.mobile-sdk-android:brivoonair:${brivoSdkVersion}")
         //FIXME Ble dependency should be removed once ble continous scanning feature is done
-        compileOnly(project(":brivoaccess"))
         compileOnly("org.bitbucket.brivoinc.mobile-sdk-android:brivoaccess:${brivoSdkVersion}")
     } else {
         compileOnly(project(":brivocore"))
