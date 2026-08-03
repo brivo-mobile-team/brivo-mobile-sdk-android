@@ -2,7 +2,7 @@
 
 # Brivo Mobile SDK for Android
 
-The Brivo Mobile SDK lets your Android app turn a user's phone into a mobile credential: redeem and manage mobile passes, unlock Brivo doors over Bluetooth (BLE) or the internet, and handle two-factor (biometric) prompts — all through a small, coroutine-friendly public surface. This guide targets external integrators building against SDK **v3.5.0**.
+The Brivo Mobile SDK lets your Android app turn a user's phone into a mobile credential: redeem and manage mobile passes, unlock Brivo doors over Bluetooth (BLE) or the internet, and handle two-factor (biometric) prompts — all through a small, coroutine-friendly public surface. This guide targets external integrators building against SDK **v3.6.0**.
 
 > [!NOTE]
 > Additional third-party lock integrations are available from Brivo. This document covers the Brivo core flows only.
@@ -54,13 +54,13 @@ Asynchronous style:
 | Min API level | **API 29** for the core modules (`brivocore`, `brivoonair`, `brivoaccess`, `brivoble`, `brivoble-core`, `brivolocalauthentication`). |
 | Build JDK | **JDK 17** (the SDK is built and published with the JDK 17 toolchain). |
 | Language | Kotlin, coroutines/`Flow`-based. |
-| SDK version | **3.5.0** (see `BrivoSDK.version` below). |
+| SDK version | **3.6.0** (see `BrivoSDK.version` below). |
 
 > [!NOTE]
-> `BrivoSDK.version` returns the string **`"v3.5.0"`** — note the leading `v` prefix.
+> `BrivoSDK.version` returns the string **`"v3.6.0"`** — note the leading `v` prefix.
 
 ```kotlin
-val version: String = BrivoSDK.version          // "v3.5.0"
+val version: String = BrivoSDK.version          // "v3.6.0"
 val deviceId: String = BrivoSDK.getDeviceId()   // stable per-install UUID (hyphens stripped)
 ```
 
@@ -87,7 +87,7 @@ These are the required ones:
 
 ```kotlin
 dependencies {
-    // Each module separate (Tag = the release tag, e.g. 3.5.0):
+    // Each module separate (Tag = the release tag, e.g. 3.6.0):
     implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoaccess:tag")
     implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoble:tag")
     implementation("org.bitbucket.brivoinc.mobile-sdk-android:brivoblecore:tag")
@@ -150,7 +150,7 @@ class App : Application() {
 | `apiUrl(url)` | `String`, optional | Override the API endpoint (defaults are derived from `serverRegion`). |
 | `onTokenRefresh(fn)` | `suspend (clientId: String, clientSecret: String) -> String?`, optional | App-supplied callback the SDK invokes when it needs a fresh token. REQUIRED FOR SDK STORAGE OFF |
 | `bleScanTimeout(duration)` | `Duration`, default `10s` | Timeout for BLE scanning. Must be `> 0`. |
-| `bleUnlockTimeout(duration)` | `Duration`, default `10s` | Timeout for a BLE unlock attempt. Must be `> 0`. |
+| `bleUnlockTimeout(duration)` | `Duration`, default `20s` | Timeout for a BLE unlock attempt. Must be `> 0`. |
 | `build()` | — | Produces the `BrivoConfiguration`. |
 
 `useSDKStorage` (the third positional argument to `builder(...)`) decides whether the SDK persists redeemed passes and credentials for you:
@@ -216,6 +216,25 @@ Bluetooth must also be **enabled** on the device. If it is off during a scan, th
 ## 6. Managing mobile passes
 
 A **mobile pass** (`BrivoOnairPass`) lets a user open doors with their phone. It aggregates the user's identity, the BLE credential, and the `sites → accessPoints` the holder is allowed to open, plus flags indicating which credential types the pass carries. Access the pass API through `BrivoSDKOnair.instance`.
+
+A pass has this shape — most integrations read only a few fields (e.g. `expires`, the holder's name, the credential flags) and hand the whole object back to the SDK on each call:
+
+```kotlin
+@Serializable
+data class BrivoOnairPass(
+    val pass: String,                          // pass id
+    val enabled: String,                       // date the pass became active
+    val expires: String? = null,               // date the pass expires (null = no expiry)
+    val accountName: String,
+    val accountId: Long,
+    val sites: ArrayList<BrivoSite>,           // sites the holder can access; each BrivoSite lists the accessPoints (doors) they may open
+    var brivoOnairPassCredentials: BrivoOnairPassCredentials, // userId + tokens
+    val firstName: String = "",
+    val middleName: String = "",
+    val lastName: String = "",
+    // …plus flags for the credential types the pass carries
+)
+```
 
 ### Redeem a pass
 
@@ -322,7 +341,7 @@ when (val result = BrivoSelectedAccessPoint.make(pass = myPass, accessPointId = 
     }
     is BrivoSDKApiState.Failed -> handle(result.brivoError)
     // ONAIR_ACCESS_POINT_NOT_FOUND (-3008) — the id isn't in the pass.
-    // ONAIR_INVALID_PASS (404) — the matched pass has no access token.
+    // ONAIR_INVALID_PASS (404) — the matched pass has no refresh token.
 }
 ```
 
@@ -688,7 +707,7 @@ One-shot calls return `BrivoSDKApiState.Failed(brivoError: BrivoError)`; unlock/
 
 ## 10. Keeping up to date & good practices
 
-- **Pin a release tag.** Always depend on an explicit JitPack tag (e.g. `3.5.0`), never a moving branch, so builds are reproducible. Confirm the latest tag with Brivo.
+- **Pin a release tag.** Always depend on an explicit JitPack tag (e.g. `3.6.0`), never a moving branch, so builds are reproducible. Confirm the latest tag with Brivo.
 - **Initialize once, early.** Call `BrivoSDK.init(...)` from your `Application.onCreate()` with the application context, and handle `BrivoSDKInitializationException`.
 - **You own permissions.** The SDK never prompts. Declare manifest permissions and request runtime permissions (`BLUETOOTH_SCAN`/`BLUETOOTH_CONNECT` on API 31+, location pre-31, and location for trusted networks) before any BLE operation, and gate scans on Bluetooth being enabled.
 - **Treat RSSI as a hint, not a measurement.** When using the Magic Button, remember ranking is signal-strength based; don't present it to users as exact distance.
